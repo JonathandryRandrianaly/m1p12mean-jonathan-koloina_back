@@ -4,6 +4,8 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
+const roleRoute = require('./routes/roleRoute');
+const authRoute = require('./routes/authRoute');
 
 // Middleware
 app.use(cors());
@@ -15,5 +17,6 @@ mongoose.connect(process.env.MONGO_URI)
  .catch(err => console.log(err));
 
 // Routes
-
+app.use('/api', roleRoute);
+app.use('/api', authRoute);
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
