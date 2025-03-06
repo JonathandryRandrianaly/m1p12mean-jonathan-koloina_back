@@ -13,7 +13,6 @@ const roleSchema = new mongoose.Schema({
         required: true,
         default: { code: 10, libelle: 'Actif' } 
     }
-});
+}, { timestamps: true });
 
-const Role = mongoose.model("Role", roleSchema);
-module.exports = Role;
+module.exports = mongoose.models.Role || mongoose.model("Role", roleSchema);
