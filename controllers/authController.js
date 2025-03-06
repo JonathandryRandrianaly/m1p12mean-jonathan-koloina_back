@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require('../models/User'); 
 const Role = require('../models/Role');
+const jwt = require("jsonwebtoken");
 
 exports.inscription = async (req, res) => {
     const { email, password, nom, dateNaissance, telephone, roleLibelles } = req.body; 
@@ -29,4 +30,49 @@ exports.inscription = async (req, res) => {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
+};
+
+exports.login = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email }).populate('roles');
+
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ message: "Identifiants invalides" });
+        }
+        const roles = user.roles.map(role => role.libelle);
+        const token = jwt.sign(
+            { userId: user._id, roles }, 
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+        res.json({ token });
+    }catch(error){
+        console.error(error);
+        res.status(500).json({ message: "Erreur du serveur" });
+    }
+    
+};
+
+exports.testToken = async (req, res) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+
+    if (!token) {
+        return res.status(403).json({ message: 'Token manquant' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Token invalide ou expiré' });
+        }
+
+        const { userId, roles } = decoded;
+
+        res.json({
+            message: 'Token validé et décodé avec succès',
+            userId,
+            roles
+        });
+    });
 };
