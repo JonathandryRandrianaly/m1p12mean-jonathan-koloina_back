@@ -23,7 +23,7 @@ exports.createRole = async (req, res) => {
     }
 };
 
-exports.deleteRole = async (req, res) => {
+exports.updateEtatRole = async (req, res) => {
     const { roleId } = req.params;
 
     try {
@@ -32,12 +32,18 @@ exports.deleteRole = async (req, res) => {
             return res.status(404).json({ message: 'Rôle non trouvé.' });
         }
 
-        role.etat = { code: -10, libelle: 'Inactif' };
+        if (role.etat.code === -10) {
+            role.etat = { code: 10, libelle: 'Actif' };
+        } else {
+            role.etat = { code: -10, libelle: 'Inactif' };
+        }
+
         await role.save();
 
-        return res.status(200).json({ message: 'Role supprimé avec succès', role });
+        return res.status(200).json({ message: 'État du rôle mis à jour avec succès', role });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
