@@ -4,8 +4,8 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
-const roleRoute = require('./routes/roleRoute');
-const authRoute = require('./routes/authRoute');
+const roleRoute = require('./app/routes/roleRoute');
+const authRoute = require('./app/routes/authRoute');
 
 // Middleware
 app.use(cors());
