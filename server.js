@@ -17,6 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
  .catch(err => console.log(err));
 
 // Routes
-app.use('/api', roleRoute);
-app.use('/api', authRoute);
+const prefix = '/api';
+app.use(prefix, roleRoute);
+app.use(prefix, authRoute);
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
