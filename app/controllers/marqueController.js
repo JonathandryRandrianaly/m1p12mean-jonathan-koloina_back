@@ -61,23 +61,10 @@ exports.getAllMarque = async (req, res) => {
     }
 };
 
-exports.getAllMarqueActive = async (req, res) => {
+exports.getAllMarqueByStatut = async (req, res) => {
+    const { statut } = req.params;
     try {
-        const marques = await Marque.find({'etat.code': 10});
-        if (marques.length > 0) {
-            return res.status(200).json(marques);
-        } else {
-            return res.status(404).json({ message: 'Aucune marque trouvée.' });
-        }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Erreur du serveur' });
-    }
-};
-
-exports.getAllMarqueInactive = async (req, res) => {
-    try {
-        const marques = await Marque.find({'etat.code': -10});
+        const marques = await Marque.find({'etat.code': statut});
         if (marques.length > 0) {
             return res.status(200).json(marques);
         } else {

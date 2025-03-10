@@ -61,23 +61,10 @@ exports.getAllRole = async (req, res) => {
     }
 };
 
-exports.getAllRoleActive = async (req, res) => {
+exports.getAllRoleByStatut = async (req, res) => {
+    const { statut } = req.params;
     try {
-        const roles = await Role.find({'etat.code': 10});
-        if (roles.length > 0) {
-            return res.status(200).json(roles);
-        } else {
-            return res.status(404).json({ message: 'Aucun rôle trouvé.' });
-        }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Erreur du serveur' });
-    }
-};
-
-exports.getAllRoleInactive = async (req, res) => {
-    try {
-        const roles = await Role.find({'etat.code': -10});
+        const roles = await Role.find({'etat.code': statut});
         if (roles.length > 0) {
             return res.status(200).json(roles);
         } else {
