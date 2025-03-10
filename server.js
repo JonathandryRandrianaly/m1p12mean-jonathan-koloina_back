@@ -8,6 +8,7 @@ const roleRoute = require('./app/routes/roleRoute');
 const authRoute = require('./app/routes/authRoute');
 const marqueRoute = require('./app/routes/marqueRoute');
 const userRoute = require('./app/routes/userRoute');
+const energieMoteurRoute = require('./app/routes/energieMoteurRoute');
 
 // Middleware
 app.use(cors());
@@ -24,4 +25,5 @@ app.use(prefix, roleRoute);
 app.use(prefix, authRoute);
 app.use(prefix, marqueRoute);
 app.use(prefix, userRoute);
+app.use(prefix, energieMoteurRoute);
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
