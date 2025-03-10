@@ -6,6 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const roleRoute = require('./app/routes/roleRoute');
 const authRoute = require('./app/routes/authRoute');
+const marqueRoute = require('./app/routes/marqueRoute');
 
 // Middleware
 app.use(cors());
@@ -20,4 +21,5 @@ mongoose.connect(process.env.MONGO_URI)
 const prefix = '/api';
 app.use(prefix, roleRoute);
 app.use(prefix, authRoute);
+app.use(prefix, marqueRoute);
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
