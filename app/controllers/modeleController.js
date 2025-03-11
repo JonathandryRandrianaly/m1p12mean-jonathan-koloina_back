@@ -1,7 +1,7 @@
 const Modele = require('../models/Modele');
 
 exports.createModele = async (req, res) => {
-    const { nom, anneeFabrication, marque, energieMoteur, transmission } = req.body;
+    const { nom, anneeFabrication, marque, energieMoteur, transmission, motricite } = req.body;
 
     try {
         const existingModele = await Modele.findOne({ nom, 'etat.code': 10 }); 
@@ -15,6 +15,7 @@ exports.createModele = async (req, res) => {
             marque,
             energieMoteur,
             transmission,
+            motricite,
             etat: { code: 10, libelle: 'Actif' } 
         });
 
@@ -29,7 +30,7 @@ exports.createModele = async (req, res) => {
 
 exports.getAllModele = async (req, res) => {
     try {
-        const modeles = await Modele.find().populate('marque').populate('energieMoteur').populate('transmission');
+        const modeles = await Modele.find().populate('marque').populate('energieMoteur').populate('transmission').populate('motricite');
         if (modeles.length > 0) {
             return res.status(200).json(modeles);
         } else {
@@ -68,7 +69,7 @@ exports.updateEtatModele = async (req, res) => {
 exports.getAllModeleByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
-        const modeles = await Modele.find({'etat.code': statut}).populate('marque').populate('energieMoteur').populate('transmission');
+        const modeles = await Modele.find({'etat.code': statut}).populate('marque').populate('energieMoteur').populate('transmission').populate('motricite');
         if (modeles.length > 0) {
             return res.status(200).json(modeles);
         } else {

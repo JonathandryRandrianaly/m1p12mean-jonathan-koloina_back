@@ -21,6 +21,10 @@ const modeleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Transmission'
     },
+    motricite: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Motricite'
+    },
     etat: { 
         type: {
             code: { type: Number, required: true }, // 10: actif -10:inactif
