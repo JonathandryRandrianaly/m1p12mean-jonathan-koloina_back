@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
+
 const roleRoute = require('./app/routes/roleRoute');
 const authRoute = require('./app/routes/authRoute');
 const marqueRoute = require('./app/routes/marqueRoute');
@@ -12,6 +13,7 @@ const energieMoteurRoute = require('./app/routes/energieMoteurRoute');
 const transmissionRoute = require('./app/routes/transmissionRoute');
 const modeleRoute = require('./app/routes/modeleRoute');
 const categorieEntretienRoute = require('./app/routes/categorieEntretienRoute');
+const uniteRoute = require('./app/routes/uniteRoute');
 
 // Middleware
 app.use(cors());
@@ -32,5 +34,6 @@ app.use(prefix, energieMoteurRoute);
 app.use(prefix, transmissionRoute);
 app.use(prefix, modeleRoute);
 app.use(prefix, categorieEntretienRoute);
+app.use(prefix, uniteRoute);
 
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
