@@ -10,6 +10,7 @@ const marqueRoute = require('./app/routes/marqueRoute');
 const userRoute = require('./app/routes/userRoute');
 const energieMoteurRoute = require('./app/routes/energieMoteurRoute');
 const transmissionRoute = require('./app/routes/transmissionRoute');
+const modeleRoute = require('./app/routes/modeleRoute');
 
 // Middleware
 app.use(cors());
@@ -28,4 +29,5 @@ app.use(prefix, marqueRoute);
 app.use(prefix, userRoute);
 app.use(prefix, energieMoteurRoute);
 app.use(prefix, transmissionRoute);
+app.use(prefix, modeleRoute);
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));

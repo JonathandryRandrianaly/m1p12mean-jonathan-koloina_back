@@ -2,7 +2,7 @@ const User= require('../models/User');
 
 exports.getAllUser = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().populate('roles');
         if (users.length > 0) {
             return res.status(200).json(users);
         } else {
@@ -17,7 +17,7 @@ exports.getAllUser = async (req, res) => {
 exports.getAllUserByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
-        const users = await User.find({'etat.code': statut});
+        const users = await User.find({'etat.code': statut}).populate('roles');
         if (users.length > 0) {
             return res.status(200).json(users);
         } else {
@@ -32,7 +32,7 @@ exports.getAllUserByStatut = async (req, res) => {
 exports.getAllUserByRole = async (req, res) => {
     const { roleId } = req.params;
     try {
-        const users = await User.find({ roles: roleId });
+        const users = await User.find({ roles: roleId }).populate('roles');
         if (users.length > 0) {
             return res.status(200).json(users);
         } else {

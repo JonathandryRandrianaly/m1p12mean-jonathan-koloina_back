@@ -16,7 +16,7 @@ exports.createRole = async (req, res) => {
 
         await newRole.save();
 
-        return res.status(201).json({ message: 'Rôle créé avec succès', role: newRole });
+        return res.status(201).json({ message: 'Rôle créé avec succès'});
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -40,7 +40,7 @@ exports.updateEtatRole = async (req, res) => {
 
         await role.save();
 
-        return res.status(200).json({ message: 'État du rôle mis à jour avec succès', role });
+        return res.status(200).json({ message: 'État du rôle mis à jour avec succès' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

@@ -16,7 +16,7 @@ exports.createMarque = async (req, res) => {
 
         await newMarque.save();
 
-        return res.status(201).json({ message: 'Marque créée avec succès', marque: Marque });
+        return res.status(201).json({ message: 'Marque créée avec succès'});
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -40,7 +40,7 @@ exports.updateEtatMarque = async (req, res) => {
 
         await marque.save();
 
-        return res.status(200).json({ message: 'État de la marque mise à jour avec succès', marque });
+        return res.status(200).json({ message: 'État de la marque mise à jour avec succès'});
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

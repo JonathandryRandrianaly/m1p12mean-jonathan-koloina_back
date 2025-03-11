@@ -40,7 +40,7 @@ exports.updateEtatTransmission = async (req, res) => {
 
         await transmission.save();
 
-        return res.status(200).json({ message: 'État de la transmission mise à jour avec succès', transmission });
+        return res.status(200).json({ message: 'État de la transmission mise à jour avec succès' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

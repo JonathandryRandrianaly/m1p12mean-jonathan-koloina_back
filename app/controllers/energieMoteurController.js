@@ -40,7 +40,7 @@ exports.updateEtatEnergieMoteur = async (req, res) => {
 
         await energieMoteur.save();
 
-        return res.status(200).json({ message: 'État de energie moteur mise à jour avec succès', energieMoteur });
+        return res.status(200).json({ message: 'État de energie moteur mise à jour avec succès'});
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
