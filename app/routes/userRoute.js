@@ -10,5 +10,6 @@ router.get('/users/role/:roleId',authorizeRoles('manager'), userController.getAl
 router.post('/user/update',authorizeRoles('client'), userController.updateInformations);
 router.post('/user/:userId',authorizeRoles('manager'), userController.updateEtatUser);
 
+router.get('/users/search',authorizeRoles('manager'), userController.searchUsers);
 
 module.exports = router;
