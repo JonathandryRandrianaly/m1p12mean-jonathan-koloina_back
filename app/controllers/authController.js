@@ -86,7 +86,7 @@ exports.decodeToken = async (req, res) => {
 };
 
 exports.addEmployés = async (req, res) => {
-    const { email, nom, dateNaissance, telephone,idGenre, roleLibelles } = req.body; 
+    const { lien, email, nom, dateNaissance, telephone,idGenre, roleLibelles } = req.body;
 
     try {
         const existingUser = await User.findOne({ email });
@@ -97,7 +97,7 @@ exports.addEmployés = async (req, res) => {
         if (roles.length === 0) {
              return res.status(400).json({ message: 'Aucun rôle correspondant trouvé.' });
         }
-        if(idGenre === 0){
+        if(idGenre === '0'){
             genre= 'Homme';
         }else{
             genre= 'Femme';
@@ -117,9 +117,11 @@ exports.addEmployés = async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '24h'}
         );
-        const lien= 'test';
         this.envoyerMailMdp(token, email, lien);
-        res.status(201).json({ message: "Employé créé avec succès" });
+        res.status(201).json({
+            message: "Employé créé avec succès" ,
+            userId: newUser._id
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -169,7 +171,10 @@ exports.checkValiditeLien = async (req, res) => {
             return res.status(404).json({ message: 'Utilisateur non trouvé.' });
         }        
         if(user.etat.code === 0){
-            return res.status(200).json({ message: 'Lien valide'});
+            return res.status(200).json({
+                message: 'Lien valide',
+                user: user
+            });
         }else{
             return res.status(400).json({ message: 'Lien invalide ou expiré.' });
         }
@@ -180,7 +185,7 @@ exports.checkValiditeLien = async (req, res) => {
 };
 
 exports.updatePassword = async (req, res) => {
-    const { userId , password} = req.body; 
+    const { userId , password} = req.body;
     try{
         const user = await User.findById(userId);
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -189,6 +194,7 @@ exports.updatePassword = async (req, res) => {
         await user.save();
         return res.status(200).json({ message: 'Mot de passe enregistré avec succès'});
     }catch(error){
+        console.log(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 }

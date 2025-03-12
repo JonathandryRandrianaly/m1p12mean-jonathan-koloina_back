@@ -1,7 +1,7 @@
 const User = require('../models/user');
 const mongoose = require('mongoose');
 
-exports.searchUsers = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', roles = [], nom = '' }) => {
+exports.searchUsers = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', roles = [],etats = [], nom = '' }) => {
     const defaultSortedColumn = sortedColumn || 'nom';
     const pageNumber = parseInt(page);
     const pageSize = parseInt(limit);
@@ -13,6 +13,9 @@ exports.searchUsers = async ({ page = 1, limit = 10, sortedColumn = '', sortDire
     }
     if (roles.length > 0) {
         query.roles = { $in: roles.map(roleId => new mongoose.Types.ObjectId(roleId)) };
+    }
+    if (etats.length > 0) {
+        query['etat.code'] = { $in: etats };
     }
 
     const totalItems = await User.countDocuments(query);

@@ -24,6 +24,24 @@ exports.createSpecialisationPersonnel= async (req, res) => {
     }
 };
 
+exports.updatepecialisationPersonnel = async (req, res) => {
+    const { user, specialisations } = req.body;
+    try {
+        await SpecialisationPersonnel.deleteMany({ user });
+        for (let specialisation of specialisations) {
+            const newSP = new SpecialisationPersonnel({
+                user,
+                specialisation
+            });
+            await newSP.save();
+        }
+        return res.status(201).json({ message: 'Les spécialisations de l\'utilisateur ont été mises à jour avec succès.' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
 exports.getAllSpecialisationByUser = async (req, res) => {
     const { userId } = req.params;
     try {
