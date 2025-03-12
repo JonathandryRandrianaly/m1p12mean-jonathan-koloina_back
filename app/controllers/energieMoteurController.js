@@ -1,4 +1,5 @@
 const EnergieMoteur = require('../models/EnergieMoteur');
+const searchService = require('../services/searchService');
 
 exports.createEnergieMoteur = async (req, res) => {
     const { nom } = req.body;
@@ -73,5 +74,16 @@ exports.getAllEnergieMoteurByStatut = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.searchEnergieMoteurs = async (req, res) => {
+    try {
+        const searchParams = req.query;
+        const result = await searchService.searchModels(searchParams,EnergieMoteur);
+        res.json(result);
+    } catch (error) {
+        console.error('Error during user search:', error);
+        res.status(500).send('Server error');
     }
 };

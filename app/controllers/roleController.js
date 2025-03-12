@@ -1,4 +1,5 @@
 const Role = require('../models/Role');
+const searchService = require('../services/searchService');
 
 exports.createRole = async (req, res) => {
     const { libelle } = req.body;
@@ -76,3 +77,13 @@ exports.getAllRoleByStatut = async (req, res) => {
     }
 };
 
+exports.searchRoles = async (req, res) => {
+    try {
+        const searchParams = req.query;
+        const result = await searchService.searchModels(searchParams,Role);
+        res.json(result);
+    } catch (error) {
+        console.error('Error during user search:', error);
+        res.status(500).send('Server error');
+    }
+};

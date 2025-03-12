@@ -4,12 +4,12 @@ const userController = require('../controllers/userController');
 const { authorizeRoles } = require('../middlewares/authMiddleware');
 
 router.get('/users',authorizeRoles('manager'), userController.getAllUser);
+router.get('/users/search',authorizeRoles('manager'), userController.searchUsers);
 router.get('/users/statut/:statut',authorizeRoles('manager'), userController.getAllUserByStatut);
 router.get('/users/role/:roleId',authorizeRoles('manager'), userController.getAllUserByRole);
 
 router.post('/user/update',authorizeRoles('client'), userController.updateInformations);
 router.post('/user/:userId',authorizeRoles('manager'), userController.updateEtatUser);
 
-router.get('/users/search',authorizeRoles('manager'), userController.searchUsers);
 
 module.exports = router;

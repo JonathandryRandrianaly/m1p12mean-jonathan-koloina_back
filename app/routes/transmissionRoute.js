@@ -4,6 +4,7 @@ const { authorizeRoles } = require('../middlewares/authMiddleware');
 const transmissionController = require('../controllers/transmissionController');
 
 router.get('/transmissions',authorizeRoles('manager','mecanicien','client'),transmissionController.getAllTransmission);
+router.get('/transmissions/search',authorizeRoles('manager','mecanicien','client'),transmissionController.searchTransmissions);
 router.get('/transmissions/statut/:statut',authorizeRoles('manager','mecanicien','client'),transmissionController.getAllTransmissionByStatut);
 
 router.post('/transmission',authorizeRoles('manager'),transmissionController.createTransmission);

@@ -4,6 +4,7 @@ const roleController = require('../controllers/roleController');
 const { authorizeRoles } = require('../middlewares/authMiddleware');
 
 router.get('/roles',authorizeRoles('manager'), roleController.getAllRole);
+router.get('/roles/search',authorizeRoles('manager'), roleController.searchRoles);
 router.get('/roles/statut/:statut',authorizeRoles('manager'), roleController.getAllRoleByStatut);
 
 router.post('/role', authorizeRoles('manager'), roleController.createRole);
