@@ -4,6 +4,7 @@ const { authorizeRoles } = require('../middlewares/authMiddleware');
 const motriciteController = require('../controllers/motriciteController');
 
 router.get('/motricites', authorizeRoles('manager','client','mecanicien'), motriciteController.getAllMotricite);
+router.get('/motricites/search', authorizeRoles('manager','client','mecanicien'), motriciteController.searchMotricites);
 router.get('/motricites/statut/:statut', authorizeRoles('manager','client','mecanicien'), motriciteController.getAllMotriciteByStatut);
 
 router.post('/motricite', authorizeRoles('manager'), motriciteController.createMotricite);
