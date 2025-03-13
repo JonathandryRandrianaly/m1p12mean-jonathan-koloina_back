@@ -80,7 +80,7 @@ exports.getAllRoleByStatut = async (req, res) => {
 exports.searchRoles = async (req, res) => {
     try {
         const searchParams = req.query;
-        const result = await searchService.searchModels(searchParams,Role);
+        const result = await searchService.searchRoles(searchParams,Role);
         res.json(result);
     } catch (error) {
         console.error('Error during user search:', error);
