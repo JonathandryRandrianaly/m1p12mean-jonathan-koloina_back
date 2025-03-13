@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const jwt = require("jsonwebtoken");
 const nodemailer = require('nodemailer');
+const SpecialisationPersonnel = require("../models/SpecialisationPersonnel");
 
 exports.inscription = async (req, res) => {
     const { email, password, nom, dateNaissance, telephone, idGenre, roleLibelles } = req.body; 
@@ -85,7 +86,7 @@ exports.decodeToken = async (req, res) => {
     });
 };
 
-exports.addEmployés = async (req, res) => {
+exports.addEmployes = async (req, res) => {
     const { lien, email, nom, dateNaissance, telephone,idGenre, roleLibelles } = req.body;
 
     try {
@@ -109,7 +110,7 @@ exports.addEmployés = async (req, res) => {
             telephone,
             genre : {idGenre : idGenre, libelle: genre},
             roles: roles.map(role => role._id),
-            etat: { code: 0, libelle: 'Créé' } 
+            etat: { code: 0, libelle: 'En attente' }
         });
         await newUser.save();
         const token = jwt.sign(
@@ -121,6 +122,29 @@ exports.addEmployés = async (req, res) => {
         res.status(201).json({
             message: "Employé créé avec succès" ,
             userId: newUser._id
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.resendInvit = async (req, res) => {
+    const { userId, lien } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+        }
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h'}
+        );
+        this.envoyerMailMdp(token, user.email, lien);
+        res.status(201).json({
+            message: "Invitation envoyer"
         });
     } catch (error) {
         console.error(error);
@@ -141,7 +165,7 @@ exports.envoyerMailMdp = async (token, email, lien) => {
     const resetLink = `${lien}?token=${token}`;
     const contenu = `
         <p>Bonjour,</p>
-        <p>Vous avez été invité à définir votre mot de passe.</p>
+        <p>Vous avez été autorisé à définir votre mot de passe.</p>
         <p>Cliquez sur le lien ci-dessous pour définir votre mot de passe :</p>
         <p><a href="${resetLink}" target="_blank" style="color: blue; text-decoration: underline;">Définir mon mot de passe</a></p>
         <p>Ce lien expirera dans 24 heures.</p>
@@ -155,7 +179,6 @@ exports.envoyerMailMdp = async (token, email, lien) => {
             subject: objet, 
             html: contenu
         });
-        console.log("E-mail envoyé avec succès !");
     } catch (error) {
         console.error("Erreur lors de l'envoi de l'e-mail :", error);
     }
@@ -198,3 +221,26 @@ exports.updatePassword = async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 }
+
+exports.updateRoleUsers = async (req, res) => {
+    const { userId, roles } = req.body;
+    try {
+        const existingUser = await User.findById(userId);
+        if (!existingUser) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+        const validRoles = await Role.find({ '_id': { $in: roles } });
+        if (validRoles.length !== roles.length) {
+            return res.status(400).json({ message: 'Certains rôles sont invalides' });
+        }
+        existingUser.roles = validRoles.map(role => role._id);
+        await existingUser.save();
+        return res.status(200).json({
+            message: 'Les rôles de l\'utilisateur ont été mis à jour avec succès.',
+            user: existingUser
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
