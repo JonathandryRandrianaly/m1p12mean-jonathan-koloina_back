@@ -19,6 +19,7 @@ const consommableRoute = require('./app/routes/consommableRoute');
 const specialisationRoute = require('./app/routes/specialisationRoute');
 const typeEntretienRoute = require('./app/routes/typeEntretienRoute');
 const specialisationPersonnelRoute = require('./app/routes/specialisationPersonnelRoute');
+const categorieModeleRoute = require('./app/routes/categorieModeleRoute');
 
 // Middleware
 app.use(cors());
@@ -45,5 +46,6 @@ app.use(prefix, consommableRoute);
 app.use(prefix, specialisationRoute);
 app.use(prefix, typeEntretienRoute);
 app.use(prefix, specialisationPersonnelRoute);
+app.use(prefix, categorieModeleRoute);
 
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
