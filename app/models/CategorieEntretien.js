@@ -5,6 +5,14 @@ const categorieEntretienSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    icone: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
     etat: { 
         type: {
             code: { type: Number, required: true }, // 10: actif -10:inactif

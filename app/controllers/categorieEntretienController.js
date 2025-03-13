@@ -2,7 +2,7 @@ const CategorieEntretien = require('../models/CategorieEntretien');
 const searchService = require('../services/searchService');
 
 exports.createCategorieEntretien = async (req, res) => {
-    const { nom } = req.body;
+    const { nom, icone, description } = req.body;
 
     try {
         const existingCE = await CategorieEntretien.findOne({ nom, 'etat.code': 10 }); 
@@ -12,6 +12,8 @@ exports.createCategorieEntretien = async (req, res) => {
 
         const newCE = new CategorieEntretien({
             nom,
+            icone,
+            description,
             etat: { code: 10, libelle: 'Actif' } 
         });
 
