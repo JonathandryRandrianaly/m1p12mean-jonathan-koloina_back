@@ -98,7 +98,7 @@ exports.searchConsommables = async ({ page = 1, limit = 10, sortedColumn = '', s
     return { totalItems, items: consommables };
 };
 
-exports.searchModeles = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', nom = '',etats = [], marques= [], energies= [], transmissions= [], motricites= [], anneeMin= '', anneeMax=''}) => {
+exports.searchModeles = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', nom = '',etats = [], marques= [], energies= [], transmissions= [], motricites= [], categories= [], anneeMin= '', anneeMax='' }) => {
     const defaultSortedColumn = sortedColumn || 'nom';
     const pageNumber = parseInt(page);
     const pageSize = parseInt(limit);
@@ -134,6 +134,10 @@ exports.searchModeles = async ({ page = 1, limit = 10, sortedColumn = '', sortDi
         if (anneeMin) query.anneeFabrication.$gte = parseInt(anneeMin, 10);
         if (anneeMax) query.anneeFabrication.$lte = parseInt(anneeMax, 10);
     }
+
+    if(categories.length >0){
+        query.categorie = { $in: categories.map(categorieId => new mongoose.Types.ObjectId(categorieId)) };
+    }
     
     const totalItems = await Modele.countDocuments(query);
     let modeles = await Modele.find(query)
@@ -142,7 +146,8 @@ exports.searchModeles = async ({ page = 1, limit = 10, sortedColumn = '', sortDi
         .populate('marque')
         .populate('energieMoteur')
         .populate('transmission')
-        .populate('motricite');
+        .populate('motricite')
+        .populate('categorie');
 
         const getValue = (obj, path) => {
             return path.split('.').reduce((o, key) => o?.[key] || '', obj);

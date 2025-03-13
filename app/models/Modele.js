@@ -25,6 +25,10 @@ const modeleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Motricite'
     },
+    categorie: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'CategorieModele'
+    },
     etat: { 
         type: {
             code: { type: Number, required: true }, // 10: actif -10:inactif
