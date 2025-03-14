@@ -1,4 +1,5 @@
 const Role = require('../models/Role');
+const searchService = require('../services/searchService');
 
 exports.createRole = async (req, res) => {
     const { libelle } = req.body;
@@ -16,7 +17,7 @@ exports.createRole = async (req, res) => {
 
         await newRole.save();
 
-        return res.status(201).json({ message: 'Rôle créé avec succès', role: newRole });
+        return res.status(201).json({ message: 'Rôle créé avec succès'});
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -40,10 +41,49 @@ exports.updateEtatRole = async (req, res) => {
 
         await role.save();
 
-        return res.status(200).json({ message: 'État du rôle mis à jour avec succès', role });
+        return res.status(200).json({ message: 'État du rôle mis à jour avec succès' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
 
+exports.getAllRole = async (req, res) => {
+    try {
+        const roles = await Role.find();
+        if (roles.length > 0) {
+            return res.status(200).json(roles);
+        } else {
+            return res.status(404).json({ message: 'Aucun rôle trouvé.' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.getAllRoleByStatut = async (req, res) => {
+    const { statut } = req.params;
+    try {
+        const roles = await Role.find({'etat.code': statut});
+        if (roles.length > 0) {
+            return res.status(200).json(roles);
+        } else {
+            return res.status(404).json({ message: 'Aucun rôle trouvé.' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.searchRoles = async (req, res) => {
+    try {
+        const searchParams = req.query;
+        const result = await searchService.searchRoles(searchParams,Role);
+        res.json(result);
+    } catch (error) {
+        console.error('Error during user search:', error);
+        res.status(500).send('Server error');
+    }
+};
