@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Consommable = require('../models/Consommable');
 const Modele = require('../models/Modele');
+const TypeEntretien = require('../models/TypeEntretien');
 
 exports.searchModels = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', nom = '',etats = []}, model) => {
     const defaultSortedColumn = sortedColumn || 'nom';
@@ -169,4 +170,76 @@ exports.searchModeles = async ({ page = 1, limit = 10, sortedColumn = '', sortDi
     });
 
     return { totalItems, items: modeles };
+};
+
+exports.searchTypesEntretien = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', nom = '',etats = [], categoriesEntretien= [], categoriesModele= [], specialisations= [], prixMin= '', prixMax='' }) => {
+    const defaultSortedColumn = sortedColumn || 'nom';
+    const pageNumber = parseInt(page);
+    const pageSize = parseInt(limit);
+    const sortOrder = sortDirection === 'desc' ? -1 : 1;
+
+    let query = {};
+    if (nom) {
+        query.nom = { $regex: nom, $options: 'i' };
+    }
+
+    if (etats.length > 0) {
+        query['etat.code'] = { $in: etats };  
+    }
+
+    if(categoriesEntretien.length >0){
+        query.categorieEntretien = { $in: categoriesEntretien.map(categorieEntretienId => new mongoose.Types.ObjectId(categorieEntretienId)) };
+    }
+
+    if(categoriesModele.length >0){
+        query.categorieModele = { $in: categoriesModele.map(categorieModeleId => new mongoose.Types.ObjectId(categorieModeleId)) };
+    }
+
+    if(specialisations.length >0){
+        query.specialisations = { $in: specialisations.map(specialisationId => new mongoose.Types.ObjectId(specialisationId)) };
+    }
+
+    if (prixMin || prixMax) {
+        query.prix = {};
+        if (prixMin) query.prix.$gte = parseInt(prixMin, 10);
+        if (prixMax) query.prix.$lte = parseInt(prixMax, 10);
+    }
+
+    const totalItems = await TypeEntretien.countDocuments(query);
+    let types = await TypeEntretien.find(query)
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize)
+        .populate('categorieEntretien')
+        .populate('categorieModele')
+        .populate('specialisations');
+
+        const getValue = (obj, path) => {
+            return path.split('.').reduce((o, key) => o?.[key] || '', obj);
+        };
+    
+
+        types = types.sort((a, b) => {
+            if (defaultSortedColumn === 'nom') {
+                const aValue = a[defaultSortedColumn] || '';
+                const bValue = b[defaultSortedColumn] || '';
+                return aValue.localeCompare(bValue) * sortOrder;
+            } 
+            else if (defaultSortedColumn === 'prix') { 
+                const aValue = parseFloat(a[defaultSortedColumn]) || 0;
+                const bValue = parseFloat(b[defaultSortedColumn]) || 0;
+                return (aValue - bValue) * sortOrder;
+            } 
+            else if (defaultSortedColumn === 'specialisation') {
+                const aValue = a.specialisations.map(spe => spe.nom).join(', ').toLowerCase();
+                const bValue = b.specialisations.map(spe => spe.nom).join(', ').toLowerCase();
+                return aValue.localeCompare(bValue) * sortOrder;
+            } 
+            else {
+                const aValue = getValue(a, defaultSortedColumn).toString().toLowerCase();
+                const bValue = getValue(b, defaultSortedColumn).toString().toLowerCase();
+                return aValue.localeCompare(bValue) * sortOrder;
+            }            
+    });
+
+    return { totalItems, items: types };
 };

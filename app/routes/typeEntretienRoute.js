@@ -4,6 +4,7 @@ const { authorizeRoles } = require('../middlewares/authMiddleware');
 const typeEntretienController = require('../controllers/typeEntretienController');
 
 router.get('/type-entretiens', authorizeRoles('manager','client','mecanicien'), typeEntretienController.getAllTypeEntretien);
+router.get('/type-entretiens/search', authorizeRoles('manager','client','mecanicien'), typeEntretienController.searchTypesEntretien);
 router.get('/type-entretiens/statut/:statut', authorizeRoles('manager','client','mecanicien'), typeEntretienController.getAllTypeEntretienByStatut);
 
 router.post('/type-entretien', authorizeRoles('manager'), typeEntretienController.createTypeEntretien);

@@ -9,9 +9,18 @@ const typeEntretienSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    categorie: {
+    categorieEntretien: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'CategorieEntretien'
+    },
+    categorieModele: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'CategorieModele'
+    },
+    prix: {
+        type: Number,
+        required: true,
+        min: 0,
     },
     specialisations: [
         {
@@ -19,11 +28,6 @@ const typeEntretienSchema = new mongoose.Schema({
             ref: 'Specialisation'
         }
     ],
-    prix: {
-        type: Number,
-        required: true,
-        min: 0,
-    },
     etat: { 
         type: {
             code: { type: Number, required: true }, // 10: actif -10:inactif
