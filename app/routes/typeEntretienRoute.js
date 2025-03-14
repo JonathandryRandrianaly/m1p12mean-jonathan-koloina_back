@@ -8,6 +8,7 @@ router.get('/type-entretiens/search', authorizeRoles('manager','client','mecanic
 router.get('/type-entretiens/statut/:statut', authorizeRoles('manager','client','mecanicien'), typeEntretienController.getAllTypeEntretienByStatut);
 
 router.post('/type-entretien', authorizeRoles('manager'), typeEntretienController.createTypeEntretien);
+router.post('/type-entretien/update', authorizeRoles('manager'), typeEntretienController.updateTypeEntretien);
 router.post('/type-entretien/:typeEntretienId', authorizeRoles('manager'), typeEntretienController.updateEtatTypeEntretien);
 
 module.exports = router;
