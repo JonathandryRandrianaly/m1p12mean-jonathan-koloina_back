@@ -1,6 +1,7 @@
 const TypeEntretien = require('../models/TypeEntretien');
 const Specialisation = require('../models/Specialisation');
 const searchService = require('../services/searchService');
+const typeEntretienService = require('../services/typeEntretienService');
 
 exports.createTypeEntretien= async (req, res) => {
     const { nom, description, categorieEntretien,categorieModele, specialisationsId, prix } = req.body;
@@ -94,5 +95,16 @@ exports.searchTypesEntretien = async (req, res) => {
     } catch (error) {
         console.error('Error during user search:', error);
         res.status(500).send('Server error');
+    }
+};
+
+exports.getTypeEntretienByCategorie = async (req, res) => {
+    try {
+        const {categorieId} = req.params;
+        const result = await typeEntretienService.getTypeEntretienByCategorieService(categorieId);
+        res.json(result);
+    } catch (error) {
+        console.error('Error during getTypeEntretienByCategorie:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
     }
 };
