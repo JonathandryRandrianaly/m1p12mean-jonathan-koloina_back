@@ -1,23 +1,21 @@
-const CategorieEntretien = require('../models/CategorieEntretien');
+const CategorieModele = require('../models/CategorieModele');
 const searchService = require('../services/searchService');
 
-exports.createCategorieEntretien = async (req, res) => {
-    const { nom, icone, description } = req.body;
+exports.createCategorieModele = async (req, res) => {
+    const { nom } = req.body;
 
     try {
-        const existingCE = await CategorieEntretien.findOne({ nom, 'etat.code': 10 }); 
-        if (existingCE) {
+        const existingCM = await CategorieModele.findOne({ nom, 'etat.code': 10 }); 
+        if (existingCM) {
             return res.status(400).json({ message: 'La catégorie existe déjà' });
         }
 
-        const newCE = new CategorieEntretien({
+        const newCM = new CategorieModele({
             nom,
-            icone,
-            description,
             etat: { code: 10, libelle: 'Actif' } 
         });
 
-        await newCE.save();
+        await newCM.save();
 
         return res.status(201).json({ message: 'Categorie créée avec succès'});
     } catch (error) {
@@ -26,22 +24,22 @@ exports.createCategorieEntretien = async (req, res) => {
     }
 };
 
-exports.updateEtatCategorieEntretien = async (req, res) => {
-    const { categorieEntretienId } = req.params;
+exports.updateEtatCategorieModele = async (req, res) => {
+    const { categorieModeleId } = req.params;
 
     try {
-        const categorieEntretien = await CategorieEntretien.findById(categorieEntretienId);
-        if (!categorieEntretien) {
+        const categorieModele = await CategorieModele.findById(categorieModeleId);
+        if (!categorieModele) {
             return res.status(404).json({ message: 'Categorie non trouvée.' });
         }
 
-        if (categorieEntretien.etat.code === -10) {
-            categorieEntretien.etat = { code: 10, libelle: 'Actif' };
+        if (categorieModele.etat.code === -10) {
+            categorieModele.etat = { code: 10, libelle: 'Actif' };
         } else {
-            categorieEntretien.etat = { code: -10, libelle: 'Inactif' };
+            categorieModele.etat = { code: -10, libelle: 'Inactif' };
         }
 
-        await categorieEntretien.save();
+        await categorieModele.save();
 
         return res.status(200).json({ message: 'État de la categorie mise à jour avec succès'});
     } catch (error) {
@@ -50,9 +48,9 @@ exports.updateEtatCategorieEntretien = async (req, res) => {
     }
 };
 
-exports.getAllCategorieEntretien = async (req, res) => {
+exports.getAllCategorieModele = async (req, res) => {
     try {
-        const categories = await CategorieEntretien.find();
+        const categories = await CategorieModele.find();
         if (categories.length > 0) {
             return res.status(200).json(categories);
         } else {
@@ -64,12 +62,12 @@ exports.getAllCategorieEntretien = async (req, res) => {
     }
 };
 
-exports.getAllCategorieEntretienByStatut = async (req, res) => {
+exports.getAllCategorieModeleByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
-        const categorieEntretiens = await CategorieEntretien.find({'etat.code': statut});
-        if (categorieEntretiens.length > 0) {
-            return res.status(200).json(categorieEntretiens);
+        const categorieModeles = await CategorieModele.find({'etat.code': statut});
+        if (categorieModeles.length > 0) {
+            return res.status(200).json(categorieModeles);
         } else {
             return res.status(404).json({ message: 'Aucune categorie trouvée.' });
         }
@@ -79,10 +77,10 @@ exports.getAllCategorieEntretienByStatut = async (req, res) => {
     }
 };
 
-exports.searchCategorieEntretiens = async (req, res) => {
+exports.searchCategorieModeles = async (req, res) => {
     try {
         const searchParams = req.query;
-        const result = await searchService.searchModels(searchParams,CategorieEntretien);
+        const result = await searchService.searchModels(searchParams,CategorieModele);
         res.json(result);
     } catch (error) {
         console.error('Error during user search:', error);

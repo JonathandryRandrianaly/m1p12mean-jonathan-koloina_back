@@ -1,7 +1,8 @@
 const Modele = require('../models/Modele');
+const searchService = require('../services/searchService');
 
 exports.createModele = async (req, res) => {
-    const { nom, anneeFabrication, marque, energieMoteur, transmission, motricite } = req.body;
+    const { nom, anneeFabrication, marque, energieMoteur, transmission, motricite, categorie } = req.body;
 
     try {
         const existingModele = await Modele.findOne({ nom, 'etat.code': 10 }); 
@@ -16,6 +17,7 @@ exports.createModele = async (req, res) => {
             energieMoteur,
             transmission,
             motricite,
+            categorie,
             etat: { code: 10, libelle: 'Actif' } 
         });
 
@@ -30,7 +32,7 @@ exports.createModele = async (req, res) => {
 
 exports.getAllModele = async (req, res) => {
     try {
-        const modeles = await Modele.find().populate('marque').populate('energieMoteur').populate('transmission').populate('motricite');
+        const modeles = await Modele.find().populate('marque').populate('energieMoteur').populate('transmission').populate('motricite').populate('categorie');
         if (modeles.length > 0) {
             return res.status(200).json(modeles);
         } else {
@@ -69,7 +71,7 @@ exports.updateEtatModele = async (req, res) => {
 exports.getAllModeleByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
-        const modeles = await Modele.find({'etat.code': statut}).populate('marque').populate('energieMoteur').populate('transmission').populate('motricite');
+        const modeles = await Modele.find({'etat.code': statut}).populate('marque').populate('energieMoteur').populate('transmission').populate('motricite').populate('categorie');
         if (modeles.length > 0) {
             return res.status(200).json(modeles);
         } else {
@@ -78,5 +80,16 @@ exports.getAllModeleByStatut = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.searchModeles = async (req, res) => {
+    try {
+        const searchParams = req.query;
+        const result = await searchService.searchModeles(searchParams);
+        res.json(result);
+    } catch (error) {
+        console.error('Error during user search:', error);
+        res.status(500).send('Server error');
     }
 };

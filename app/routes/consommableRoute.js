@@ -4,6 +4,7 @@ const { authorizeRoles } = require('../middlewares/authMiddleware');
 const consommableController = require('../controllers/consommableController');
 
 router.get('/consommables', authorizeRoles('manager','client','mecanicien'), consommableController.getAllConsommable);
+router.get('/consommables/search', authorizeRoles('manager','client','mecanicien'), consommableController.searchConsommables);
 router.get('/consommables/statut/:statut', authorizeRoles('manager','client','mecanicien'), consommableController.getAllConsommableByStatut);
 
 router.post('/consommable', authorizeRoles('manager'), consommableController.createConsommable);

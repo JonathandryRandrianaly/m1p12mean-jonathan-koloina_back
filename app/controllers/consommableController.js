@@ -1,4 +1,5 @@
 const Consommable = require('../models/Consommable');
+const searchService = require('../services/searchService');
 
 exports.createConsommable= async (req, res) => {
     const { nom, unite } = req.body;
@@ -74,5 +75,16 @@ exports.getAllConsommableByStatut = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.searchConsommables = async (req, res) => {
+    try {
+        const searchParams = req.query;
+        const result = await searchService.searchConsommables(searchParams);
+        res.json(result);
+    } catch (error) {
+        console.error('Error during user search:', error);
+        res.status(500).send('Server error');
     }
 };
