@@ -15,6 +15,13 @@ const vehiculeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    etat: { 
+        type: {
+            code: { type: Number, required: true }, // 10: actif -10:inactif
+            libelle: { type: String, required: true }
+        },
+        required: true
     }
 }, { timestamps: true });
 

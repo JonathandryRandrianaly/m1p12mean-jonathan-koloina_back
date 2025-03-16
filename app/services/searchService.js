@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Consommable = require('../models/Consommable');
 const Modele = require('../models/Modele');
 const TypeEntretien = require('../models/TypeEntretien');
+const Vehicule = require('../models/Vehicule');
 
 exports.searchModels = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', nom = '',etats = []}, model) => {
     const defaultSortedColumn = sortedColumn || 'nom';
@@ -242,4 +243,87 @@ exports.searchTypesEntretien = async ({ page = 1, limit = 10, sortedColumn = '',
     });
 
     return { totalItems, items: types };
+};
+
+exports.searchVehicules = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', immatriculation = '', proprietaire= '', etats = [], modeles= []}) => {
+    const defaultSortedColumn = sortedColumn || 'immatriculation';
+    const pageNumber = parseInt(page);
+    const pageSize = parseInt(limit);
+    const sortOrder = sortDirection === 'desc' ? -1 : 1;
+
+    let matchQuery = {};
+
+    if (immatriculation) {
+        matchQuery.immatriculation = { $regex: immatriculation, $options: 'i' };
+    }
+
+    if (etats.length > 0) {
+        matchQuery["etat.code"] = { $in: etats.map(code => Number(code)) };  
+    }
+
+    if (modeles.length > 0) {
+        matchQuery.modele = { $in: modeles.map(modeleId => new mongoose.Types.ObjectId(modeleId)) };
+    }
+
+    const aggregationPipeline = [
+        { $match: matchQuery },
+
+        { 
+            $lookup: {
+                from: "users", 
+                localField: "proprietaire",
+                foreignField: "_id",
+                as: "proprietaire"
+            }
+        },
+        { $unwind: { path: "$proprietaire", preserveNullAndEmptyArrays: true } },
+
+        { 
+            $lookup: {
+                from: "modeles", 
+                localField: "modele",
+                foreignField: "_id",
+                as: "modele"
+            }
+        },
+        { $unwind: { path: "$modele", preserveNullAndEmptyArrays: true } }
+    ];
+
+    if (proprietaire) {
+        aggregationPipeline.push({
+            $match: { "proprietaire.nom": { $regex: proprietaire, $options: "i" } }
+        });
+    }
+
+    const totalItems = await Vehicule.aggregate([...aggregationPipeline, { $count: "total" }]);
+    const total = totalItems.length > 0 ? totalItems[0].total : 0;
+
+    aggregationPipeline.push(
+        { $skip: (pageNumber - 1) * pageSize },
+        { $limit: pageSize }
+    );
+
+    let vehicules = await Vehicule.aggregate(aggregationPipeline);
+
+    const getValue = (obj, path) => {
+        return path.split('.').reduce((o, key) => o?.[key] || '', obj);
+    };
+
+    vehicules = vehicules.sort((a, b) => {
+        if (defaultSortedColumn === 'immatriculation') {
+            const aValue = a[defaultSortedColumn] || '';
+            const bValue = b[defaultSortedColumn] || '';
+            return aValue.localeCompare(bValue) * sortOrder;
+        } else if (defaultSortedColumn === 'modele'){
+            const aValue = a.modele?.nom.toLowerCase();
+            const bValue = b.modele?.nom.toLowerCase();
+            return aValue.localeCompare(bValue) * sortOrder;
+        } else{
+            const aValue = a.proprietaire?.nom.toLowerCase();
+            const bValue = b.proprietaire?.nom.toLowerCase();
+            return aValue.localeCompare(bValue) * sortOrder;
+        }
+    });
+
+    return { totalItems: total, items: vehicules };
 };
