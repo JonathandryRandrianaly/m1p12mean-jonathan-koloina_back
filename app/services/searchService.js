@@ -89,7 +89,13 @@ exports.searchConsommables = async ({ page = 1, limit = 10, sortedColumn = '', s
                 const uniteA = a.unite?.nom.toLowerCase();
                 const uniteB = b.unite?.nom.toLowerCase();
                 return uniteA.localeCompare(uniteB) * sortOrder;
-            } else {
+            }
+            else if (defaultSortedColumn === 'prix') { 
+                const aValue = parseFloat(a[defaultSortedColumn]) || 0;
+                const bValue = parseFloat(b[defaultSortedColumn]) || 0;
+                return (aValue - bValue) * sortOrder;
+            } 
+            else {
                 const aValue = a[defaultSortedColumn] || '';
                 const bValue = b[defaultSortedColumn] || '';
                 return aValue.localeCompare(bValue) * sortOrder;
