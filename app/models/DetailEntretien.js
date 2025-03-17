@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const detailEntretienSchema = new mongoose.Schema({
+    entretien: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Entretien'
+    },
     typeEntretien: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TypeEntretien'
