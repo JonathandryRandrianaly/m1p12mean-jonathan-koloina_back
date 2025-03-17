@@ -50,7 +50,13 @@ exports.updateEtatVehicule = async (req, res) => {
 exports.getAllVehiculeByProprio = async (req, res) => {
     const { proprietaire } = req.params;
     try {
-        const vehicules = await Vehicule.find({proprietaire}).populate('modele').populate('proprietaire');
+        const vehicules = await Vehicule.find({ proprietaire })
+        .populate([
+            { path: 'modele', populate: { path: 'marque' } },
+            { path: 'modele', populate: { path: 'categorie' } }
+        ])        
+        .populate('proprietaire');
+    
         if (vehicules.length > 0) {
             return res.status(200).json(vehicules);
         } else {
