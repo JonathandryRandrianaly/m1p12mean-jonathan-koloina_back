@@ -245,7 +245,7 @@ exports.searchTypesEntretien = async ({ page = 1, limit = 10, sortedColumn = '',
     return { totalItems, items: types };
 };
 
-exports.searchVehicules = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', immatriculation = '', proprietaire= '', etats = [], modeles= []}) => {
+exports.searchVehicules = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', immatriculation = '', proprietaire= '', proprietaireId='', etats = [], modeles= []}) => {
     const defaultSortedColumn = sortedColumn || 'immatriculation';
     const pageNumber = parseInt(page);
     const pageSize = parseInt(limit);
@@ -263,6 +263,10 @@ exports.searchVehicules = async ({ page = 1, limit = 10, sortedColumn = '', sort
 
     if (modeles.length > 0) {
         matchQuery.modele = { $in: modeles.map(modeleId => new mongoose.Types.ObjectId(modeleId)) };
+    }
+
+    if(proprietaireId){
+        matchQuery.proprietaire = new mongoose.Types.ObjectId(proprietaireId);
     }
 
     const aggregationPipeline = [
@@ -304,10 +308,6 @@ exports.searchVehicules = async ({ page = 1, limit = 10, sortedColumn = '', sort
     );
 
     let vehicules = await Vehicule.aggregate(aggregationPipeline);
-
-    const getValue = (obj, path) => {
-        return path.split('.').reduce((o, key) => o?.[key] || '', obj);
-    };
 
     vehicules = vehicules.sort((a, b) => {
         if (defaultSortedColumn === 'immatriculation') {
