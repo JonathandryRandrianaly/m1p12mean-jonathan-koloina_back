@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 const TypeEntretien = require('../models/TypeEntretien');
 
-exports.getTypeEntretienByCategorieService = async (categorieEntretienId) => {
+exports.getTypeEntretienByCategorieService = async (categorieEntretienId,categorieModeleId) => {
     try {
         const result = await TypeEntretien.find({
             categorieEntretien: categorieEntretienId,
+            categorieModele: categorieModeleId,
             'etat.code': 10
         })
             .populate('categorieEntretien')
