@@ -98,6 +98,26 @@ exports.searchTypesEntretien = async (req, res) => {
     }
 };
 
+exports.updateTypeEntretien= async (req, res) => {
+    const { typeId , specialisationsId, description, prix } = req.body;
+
+    try {
+        const type = await TypeEntretien.findById(typeId);  
+        const specialisations = await Specialisation.find({ _id: { $in: specialisationsId } }); 
+        type.specialisations = [];
+        type.specialisations= specialisations.map(spe => spe._id);
+        type.description= description;
+        type.prix= prix;
+
+        await type.save();
+
+        return res.status(201).json({success: true, message: 'Specialisations modifiés avec succès'});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
 exports.getTypeEntretienByCategorie = async (req, res) => {
     try {
         const {categorieId} = req.params;
