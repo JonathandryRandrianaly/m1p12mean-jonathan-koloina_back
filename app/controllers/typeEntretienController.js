@@ -120,8 +120,8 @@ exports.updateTypeEntretien= async (req, res) => {
 
 exports.getTypeEntretienByCategorie = async (req, res) => {
     try {
-        const {categorieId} = req.params;
-        const result = await typeEntretienService.getTypeEntretienByCategorieService(categorieId);
+        const { categorieId, categorieModeleId } = req.query;
+        const result = await typeEntretienService.getTypeEntretienByCategorieService(categorieId,categorieModeleId);
         res.json(result);
     } catch (error) {
         console.error('Error during getTypeEntretienByCategorie:', error);

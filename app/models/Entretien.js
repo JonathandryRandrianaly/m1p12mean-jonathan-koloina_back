@@ -13,6 +13,13 @@ const entretienSchema = new mongoose.Schema({
     kilometrage: {
         type: Number,
         required: false
+    },
+    etat: {
+        type: {
+            code: { type: Number, required: true },
+            libelle: { type: String, required: true }
+        },
+        required: true
     }
 }, { timestamps: true })
 
