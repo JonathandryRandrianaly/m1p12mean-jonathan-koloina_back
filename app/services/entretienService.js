@@ -55,7 +55,7 @@ exports.getOrdreMecaniciens = async (detailEntretienId) => {
         }
         const specialisationIds = detailEntretien.typeEntretien.specialisations.map(spec => spec.toString());
 
-        const entretiensEnCours = await DetailEntretien.find()
+        const entretiensMemeDate = await DetailEntretien.find()
             .populate({
                 path: "entretien",
                 match: { 
@@ -65,29 +65,37 @@ exports.getOrdreMecaniciens = async (detailEntretienId) => {
                 }
             })
             .populate("users");
+
+          const entretiensEnCours = entretiensMemeDate.filter(detail => detail.entretien !== null);
     
-        const specialisationPromises = mecaniciens.map(mecanicien =>
-            SpecialisationPersonnel.find({ user: mecanicien._id })
-        );
-
-        const specialisationsResult = await Promise.all(specialisationPromises);
-
-        let ordreMecaniciens = mecaniciens.map((mecanicien, index) => {
-            const userId = mecanicien._id.toString();
-            const spes = specialisationsResult[index];
-            const correspondanceCount = spes
-                ? spes.filter(spec => specialisationIds.includes(spec.specialisation.toString())).length
-                : 0;
-            const estOccupe = entretiensEnCours.some(entretien =>
-                entretien.users.some(user => user._id.toString() === userId)
+            const specialisationPromises = mecaniciens.map(mecanicien =>
+                SpecialisationPersonnel.find({ user: mecanicien._id }).populate('specialisation')
             );
-
-            return {
-                user: mecanicien,
-                correspondanceCount,
-                estOccupe
-            };
-        });
+            
+            const specialisationsResult = await Promise.all(specialisationPromises);
+            
+            let ordreMecaniciens = mecaniciens.map((mecanicien, index) => {
+                const userId = mecanicien._id.toString();
+                const spes = specialisationsResult[index];
+            
+                const specialisations = spes.map(s => s.specialisation.nom);
+            
+                const correspondanceCount = spes
+                    ? spes.filter(spec => specialisationIds.includes(spec.specialisation._id.toString())).length
+                    : 0;
+            
+                const estOccupe = entretiensEnCours.some(entretien =>
+                    entretien.users.some(user => user._id.toString() === userId)
+                );
+            
+                return {
+                    user: mecanicien,
+                    specialisations, 
+                    correspondanceCount,
+                    estOccupe
+                };
+            });
+            
 
         ordreMecaniciens.sort((a, b) => {
             if (b.correspondanceCount !== a.correspondanceCount) {
@@ -107,9 +115,9 @@ exports.getOrdreMecaniciens = async (detailEntretienId) => {
 
 exports.assignerMecano= async ( detailEntretienId, usersId) => {
     try {
-        const detailEntretien= await DetailEntretien.findById(detailEntretienId);
+        const detailEntretien= await DetailEntretien.findById(detailEntretienId).populate('entretien');
         detailEntretien.users = usersId;
-        detailEntretien.dateDebut = detailEntretien.entretien.dateDebut;
+        detailEntretien.dateDebut = detailEntretien.entretien.date;
         detailEntretien.etat = { code: 0, libelle: 'En cours' };
         await detailEntretien.save();
     } catch (error) {
