@@ -3,6 +3,7 @@ const DetailEntretien = require("../models/DetailEntretien");
 const User = require("../models/User");
 const SpecialisationPersonnel = require("../models/SpecialisationPersonnel");
 const mongoose = require('mongoose');
+const moment = require('moment');
 
 exports.createEntretien= async ( date, vehiculeId ) => {
     try {
@@ -113,5 +114,53 @@ exports.assignerMecano= async ( detailEntretienId, usersId) => {
         await detailEntretien.save();
     } catch (error) {
         console.error(error);
+    }
+};
+
+exports.getEntretienMonth = async (month) => {
+    try {
+        const startOfMonth = moment().month(month - 1).startOf('month').toDate();
+        const endOfMonth = moment().month(month - 1).endOf('month').toDate();
+
+        const entretiens = await Entretien.find({
+            date: {
+                $gte: startOfMonth,
+                $lt: endOfMonth
+            }
+        }).populate('vehicule');
+
+        return entretiens;
+    } catch (error) {
+        console.error('Error fetching entretien records:', error);
+        throw error;
+    }
+};
+
+exports.getEntretienDetailByDate = async (date) => {
+    try {
+        const startOfDay = new Date(date);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        const entretiens = await Entretien.find({
+            date: { $gte: startOfDay, $lte: endOfDay }
+        }).select('_id');
+
+        const detailsEntretien = await DetailEntretien
+            .find({ entretien: { $in: entretiens } })
+            .populate([
+                {
+                    path: 'entretien',
+                    populate: {
+                        path: 'vehicule',
+                    }
+                }
+            ]);
+
+        return detailsEntretien;
+    } catch (error) {
+        console.error('Error fetching entretiens:', error);
+        res.status(500).json({ message: 'Error fetching entretiens' });
     }
 };

@@ -4,6 +4,8 @@ const entretienController = require('../controllers/entretienController');
 const { authorizeRoles } = require('../middlewares/authMiddleware');
 
 router.get('/entretien/mecaniciens/:detailEntretienId', authorizeRoles('manager'), entretienController.getOrdreMecaniciens);
+router.get('/entretiens/month/:month', authorizeRoles('manager'), entretienController.getEntretienByMonth);
+router.get('/entretiens/detail/:date', authorizeRoles('manager'), entretienController.getEntretienDetailByDate);
 
 router.post('/entretien/demande-service', authorizeRoles('manager','client','mecanicien'), entretienController.enregistrerDemandeService);
 router.post('/entretien/mecanicien/assigner', authorizeRoles('manager'), entretienController.assignerMecano);
