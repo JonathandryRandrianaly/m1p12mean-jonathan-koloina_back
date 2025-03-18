@@ -38,3 +38,26 @@ exports.assignerMecano= async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.getEntretienByMonth= async (req, res) => {
+    const { month } = req.params;
+
+    try {
+        const entretiens = await entretienService.getEntretienMonth(month);
+        return res.status(200).json(entretiens);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.getEntretienDetailByDate= async (req, res) => {
+    const { date } = req.params;
+    try {
+        const entretiens = await entretienService.getEntretienDetailByDate(date);
+        return res.status(200).json(entretiens);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
