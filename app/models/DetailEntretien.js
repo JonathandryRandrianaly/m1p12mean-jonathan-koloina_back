@@ -9,6 +9,24 @@ const detailEntretienSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TypeEntretien'
     },
+    users: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ],
+    dateDebut: {
+        type: Date,
+        required: false
+    },
+    dateFin: {
+        type: Date,
+        required: false
+    },
+    remarque: {
+        type: String,
+        required: false
+    },
     etat: {
         type: {
             code: { type: Number, required: true }, // -10:a faire, 0 en cours, 10: attente de validation, 20: valider

@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/User');
 const mongoose = require('mongoose');
 
 exports.searchUsers = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', roles = [],etats = [], nom = '' }) => {
