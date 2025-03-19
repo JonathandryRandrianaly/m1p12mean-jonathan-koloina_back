@@ -9,6 +9,7 @@ router.get('/entretiens/month/:month', authorizeRoles('manager'), entretienContr
 router.get('/entretiens/detail/:date', authorizeRoles('manager'), entretienController.getEntretienDetailByDate);
 router.get('/entretien/details/:detailEntretienId', authorizeRoles('manager'), entretienController.getDetailEntretienById);
 router.get('/entretiens/rdv/:clientId', authorizeRoles('client'), entretienController.getRdvByClient);
+router.get('/entretiens/detail-personnel/:date/:userId', authorizeRoles('mecanicien','manager'), entretienController.getEntretienDetailByDatePersonnel);
 
 router.post('/entretien/demande-service', authorizeRoles('manager','client','mecanicien'), entretienController.enregistrerDemandeService);
 router.post('/entretien/mecanicien/assigner', authorizeRoles('manager'), entretienController.assignerMecano);
