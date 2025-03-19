@@ -1,4 +1,6 @@
 const entretienService = require("../services/entretienService");
+const User = require("../models/User");
+const Role = require("../models/Role");
 
 exports.enregistrerDemandeService= async (req, res) => {
     const { date, vehiculeId, typeEntretiens } = req.body;
@@ -56,6 +58,20 @@ exports.getEntretienDetailByDate= async (req, res) => {
     try {
         const entretiens = await entretienService.getEntretienDetailByDate(date);
         return res.status(200).json(entretiens);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.updateStatusDetail = async (req, res) => {
+    const { detailEntretienId, etatCode, etatLibelle } = req.body;
+    try {
+        const entretiens = await entretienService.updateStatusDetail(detailEntretienId,etatCode,etatLibelle);
+        return res.status(200).json({
+            message: 'Status changed successfully',
+            detailEntretienId: entretiens
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
