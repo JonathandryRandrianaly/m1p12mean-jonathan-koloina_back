@@ -207,3 +207,41 @@ exports.updateStatusDetail = async (detailEntretienId, etatCode, etatLibelle) =>
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.getEntretienDetailByDateByPersonnel = async (date,userId) => {
+    try {
+        const startOfDay = new Date(date);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        const entretiens = await Entretien.find({
+            date: { $gte: startOfDay, $lte: endOfDay }
+        }).select('_id');
+
+        const detailsEntretien = await DetailEntretien
+            .find({
+                entretien: { $in: entretiens },
+                users: { $in: [userId] }
+            })
+            .populate([
+                {
+                    path: 'entretien',
+                    populate: {
+                        path: 'vehicule',
+                        populate: {
+                            path: 'modele',
+                            populate: {
+                                path: 'marque'
+                            }
+                        }
+                    }
+                }
+            ])
+            .populate('typeEntretien');
+
+        return detailsEntretien;
+    } catch (error) {
+        console.error('Error fetching entretiens:', error);
+    }
+};
