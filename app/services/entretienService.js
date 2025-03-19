@@ -5,6 +5,7 @@ const SpecialisationPersonnel = require("../models/SpecialisationPersonnel");
 const mongoose = require('mongoose');
 const moment = require('moment');
 const Role = require("../models/Role");
+const Vehicule = require("../models/Vehicule");
 
 exports.createEntretien= async ( date, vehiculeId ) => {
     try {
@@ -118,7 +119,6 @@ exports.assignerMecano= async ( detailEntretienId, usersId) => {
     try {
         const detailEntretien= await DetailEntretien.findById(detailEntretienId).populate('entretien');
         detailEntretien.users = usersId;
-        detailEntretien.dateDebut = detailEntretien.entretien.date;
         await detailEntretien.save();
     } catch (error) {
         console.error(error);
@@ -205,5 +205,26 @@ exports.updateStatusDetail = async (detailEntretienId, etatCode, etatLibelle) =>
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.getRdvByClient = async (clientId) => {
+    try {
+        const vehicules = await Vehicule.find({ proprietaire: clientId });
+        const entretiens = await Entretien.find({vehicule: { $in: vehicules}})
+        .populate('vehicule')
+        .sort({date: -1});
+        const detailsEntretiens= await DetailEntretien.find({entretien: {$in: entretiens}, 'etat.code': { $ne: 20 }})
+        .populate({path: 'entretien', populate: 'vehicule'})
+        .populate('typeEntretien')
+        .populate('users');
+        detailsEntretiens.sort((a, b) => {
+            const indexA = entretiens.findIndex(entretien => entretien._id.toString() === a.entretien._id.toString());
+            const indexB = entretiens.findIndex(entretien => entretien._id.toString() === b.entretien._id.toString());
+            return indexA - indexB; 
+          });
+        return detailsEntretiens;
+    } catch (error) {
+        console.error('Error get Rdv:', error);
     }
 };

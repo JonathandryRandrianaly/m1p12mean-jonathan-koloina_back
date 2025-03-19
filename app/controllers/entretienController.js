@@ -88,3 +88,14 @@ exports.updateStatusDetail = async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.getRdvByClient= async (req, res) => {
+    const { clientId } = req.params;
+    try {
+        const detailsEntretiens = await entretienService.getRdvByClient(clientId);
+        return res.status(200).json(detailsEntretiens);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
