@@ -112,9 +112,9 @@ exports.getEntretienDetailByDatePersonnel= async (req, res) => {
 };
 
 exports.updateDateDetailEntretien= async (req, res) => {
-    const params = req.query;
+    const {detailEntretienId, dateDebut, dateFin} = req.body;
     try {
-       const success= await entretienService.updateDateDetailEntretien(params);
+       const success= await entretienService.updateDateDetailEntretien(detailEntretienId, dateDebut, dateFin);
         return res.status(200).json(success);
     } catch (error) {
         console.error(error);
