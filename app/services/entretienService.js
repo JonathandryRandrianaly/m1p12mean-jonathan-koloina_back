@@ -328,3 +328,15 @@ exports.updateDateDetailEntretien = async ({detailEntretienId, dateDebut, dateFi
         console.error('Error get Rdv:', error);
     }
 };
+
+exports.addRapportDetail = async (detailEntretienId, rapportId) => {
+    try {
+        const detailEntretien = await DetailEntretien.findById(detailEntretienId);
+        if (!detailEntretien.rapports.includes(rapportId)) {
+            detailEntretien.rapports.push(rapportId); 
+        }
+        await detailEntretien.save();
+    } catch (error) {
+        console.error('Error get Rdv:', error);
+    }
+};
