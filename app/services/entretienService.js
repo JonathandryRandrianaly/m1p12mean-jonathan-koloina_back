@@ -181,7 +181,33 @@ exports.getEntretienDetailByDate = async (date) => {
 
 exports.getDetailEntretienById = async (detailEntretienId) => {
     try {
-        const detailEntretien= await DetailEntretien.findById(detailEntretienId).populate('entretien').populate('typeEntretien').populate('users');
+        const detailEntretien= await DetailEntretien.findById(detailEntretienId)
+        .populate({
+            path: 'entretien',
+            select: 'date kilometrage', 
+            populate: {
+                path: 'vehicule',
+                select: 'immatriculation',
+                populate: [
+                    { path: 'proprietaire', select: 'nom' },
+                    { path: 'modele', select: 'nom anneeFabrication', populate: [
+                        { path: 'marque', select: 'nom' },
+                        { path: 'energieMoteur', select: 'nom' },
+                        { path: 'transmission', select: 'nom' },
+                        { path: 'motricite', select: 'nom' },
+                        { path: 'categorie', select: 'nom' }
+                    ]}
+                ]
+            }
+        })
+        .populate({
+            path:'typeEntretien',
+            select: 'nom description prix'
+        })
+        .populate({
+            path:'users',
+            select:'nom'
+        });
         return detailEntretien;
     } catch (error) {
         console.error('Error get Detail:', error);
