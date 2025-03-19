@@ -7,6 +7,7 @@ const authController = require("../controllers/authController");
 router.get('/entretien/mecaniciens/:detailEntretienId', authorizeRoles('manager'), entretienController.getOrdreMecaniciens);
 router.get('/entretiens/month/:month', authorizeRoles('manager'), entretienController.getEntretienByMonth);
 router.get('/entretiens/detail/:date', authorizeRoles('manager'), entretienController.getEntretienDetailByDate);
+router.get('/entretien/details/:detailEntretienId', authorizeRoles('manager'), entretienController.getDetailEntretienById);
 
 router.post('/entretien/demande-service', authorizeRoles('manager','client','mecanicien'), entretienController.enregistrerDemandeService);
 router.post('/entretien/mecanicien/assigner', authorizeRoles('manager'), entretienController.assignerMecano);
