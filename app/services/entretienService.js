@@ -292,3 +292,39 @@ exports.getEntretienDetailByDateByPersonnel = async (date,userId) => {
         console.error('Error fetching entretiens:', error);
     }
 };
+
+exports.updateDateDetailEntretien = async ({detailEntretienId, dateDebut, dateFin}) => {
+    try {
+        const detailEntretien = await DetailEntretien.findById(detailEntretienId);
+        if(dateDebut || dateFin){
+            if(dateDebut){
+                detailEntretien.dateDebut = dateDebut;
+                success = true;
+            }
+            if(dateFin){
+                if(dateDebut){
+                    if(new Date(dateFin)>=new Date(dateDebut)){
+                        detailEntretien.dateFin = dateFin;
+                        success = true;
+                    }else{
+                        success = false;
+                    }
+                }else{
+                    if(new Date(dateFin)>=detailEntretien.dateDebut){
+                        detailEntretien.dateFin = dateFin;
+                        success = true;
+                    }
+                    else{
+                        success = false;
+                    }
+                }
+            }
+        }
+        if(success === true){
+            await detailEntretien.save();
+        }
+        return success;
+    } catch (error) {
+        console.error('Error get Rdv:', error);
+    }
+};

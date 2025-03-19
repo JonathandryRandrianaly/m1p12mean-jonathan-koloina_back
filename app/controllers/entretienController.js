@@ -110,3 +110,14 @@ exports.getEntretienDetailByDatePersonnel= async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.updateDateDetailEntretien= async (req, res) => {
+    const params = req.query;
+    try {
+       const success= await entretienService.updateDateDetailEntretien(params);
+        return res.status(200).json(success);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
