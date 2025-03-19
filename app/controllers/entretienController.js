@@ -61,3 +61,14 @@ exports.getEntretienDetailByDate= async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.getDetailEntretienById= async (req, res) => {
+    const { detailEntretienId } = req.params;
+    try {
+        const detailEntretien = await entretienService.getDetailEntretienById(detailEntretienId);
+        return res.status(200).json(detailEntretien);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};

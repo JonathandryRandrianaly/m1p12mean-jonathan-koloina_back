@@ -118,7 +118,6 @@ exports.assignerMecano= async ( detailEntretienId, usersId) => {
         const detailEntretien= await DetailEntretien.findById(detailEntretienId).populate('entretien');
         detailEntretien.users = usersId;
         detailEntretien.dateDebut = detailEntretien.entretien.date;
-        detailEntretien.etat = { code: 0, libelle: 'En cours' };
         await detailEntretien.save();
     } catch (error) {
         console.error(error);
@@ -169,6 +168,14 @@ exports.getEntretienDetailByDate = async (date) => {
         return detailsEntretien;
     } catch (error) {
         console.error('Error fetching entretiens:', error);
-        res.status(500).json({ message: 'Error fetching entretiens' });
+    }
+};
+
+exports.getDetailEntretienById = async (detailEntretienId) => {
+    try {
+        const detailEntretien= await DetailEntretien.findById(detailEntretienId).populate('entretien').populate('typeEntretien').populate('users');
+        return detailEntretien;
+    } catch (error) {
+        console.error('Error get Detail:', error);
     }
 };
