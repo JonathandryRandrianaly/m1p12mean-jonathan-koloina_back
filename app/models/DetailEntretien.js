@@ -23,10 +23,12 @@ const detailEntretienSchema = new mongoose.Schema({
         type: Date,
         required: false
     },
-    remarque: {
-        type: String,
-        required: false
-    },
+    rapports: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Rapport'
+        }
+    ],
     etat: {
         type: {
             code: { type: Number, required: true }, // -10:a faire, 0 en cours, 10: attente de validation, 20: valider

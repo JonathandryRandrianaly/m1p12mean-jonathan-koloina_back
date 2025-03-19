@@ -179,7 +179,33 @@ exports.getEntretienDetailByDate = async (date) => {
 
 exports.getDetailEntretienById = async (detailEntretienId) => {
     try {
-        const detailEntretien= await DetailEntretien.findById(detailEntretienId).populate('entretien').populate('typeEntretien').populate('users');
+        const detailEntretien= await DetailEntretien.findById(detailEntretienId)
+        .populate({
+            path: 'entretien',
+            select: 'date kilometrage', 
+            populate: {
+                path: 'vehicule',
+                select: 'immatriculation',
+                populate: [
+                    { path: 'proprietaire', select: 'nom' },
+                    { path: 'modele', select: 'nom anneeFabrication', populate: [
+                        { path: 'marque', select: 'nom' },
+                        { path: 'energieMoteur', select: 'nom' },
+                        { path: 'transmission', select: 'nom' },
+                        { path: 'motricite', select: 'nom' },
+                        { path: 'categorie', select: 'nom' }
+                    ]}
+                ]
+            }
+        })
+        .populate({
+            path:'typeEntretien',
+            select: 'nom description prix'
+        })
+        .populate({
+            path:'users',
+            select:'nom'
+        });
         return detailEntretien;
     } catch (error) {
         console.error('Error get Detail:', error);
@@ -284,5 +310,53 @@ exports.getAssignTaskByPersonnel = async (date,userId) => {
     } catch (error) {
         console.error('Error getting DetailEntretien count:', error);
         throw error;
+    }
+};
+
+exports.updateDateDetailEntretien = async ({detailEntretienId, dateDebut, dateFin}) => {
+    try {
+        const detailEntretien = await DetailEntretien.findById(detailEntretienId);
+        if(dateDebut || dateFin){
+            if(dateDebut){
+                detailEntretien.dateDebut = dateDebut;
+                success = true;
+            }
+            if(dateFin){
+                if(dateDebut){
+                    if(new Date(dateFin)>=new Date(dateDebut)){
+                        detailEntretien.dateFin = dateFin;
+                        success = true;
+                    }else{
+                        success = false;
+                    }
+                }else{
+                    if(new Date(dateFin)>=detailEntretien.dateDebut){
+                        detailEntretien.dateFin = dateFin;
+                        success = true;
+                    }
+                    else{
+                        success = false;
+                    }
+                }
+            }
+        }
+        if(success === true){
+            await detailEntretien.save();
+        }
+        return success;
+    } catch (error) {
+        console.error('Error get Rdv:', error);
+    }
+};
+
+exports.addRapportDetail = async (detailEntretienId, rapportId) => {
+    try {
+        const detailEntretien = await DetailEntretien.findById(detailEntretienId);
+        if (!detailEntretien.rapports.includes(rapportId)) {
+            detailEntretien.rapports.push(rapportId); 
+        }
+        await detailEntretien.save();
+    } catch (error) {
+        console.error('Error get Rdv:', error);
     }
 };
