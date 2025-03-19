@@ -75,28 +75,26 @@ exports.getOrdreMecaniciens = async (detailEntretienId) => {
             );
             
             const specialisationsResult = await Promise.all(specialisationPromises);
-            
-            let ordreMecaniciens = mecaniciens.map((mecanicien, index) => {
+
+            let ordreMecaniciens = await Promise.all(mecaniciens.map(async (mecanicien, index) => {
                 const userId = mecanicien._id.toString();
                 const spes = specialisationsResult[index];
-            
+
                 const specialisations = spes.map(s => s.specialisation.nom);
-            
+
                 const correspondanceCount = spes
                     ? spes.filter(spec => specialisationIds.includes(spec.specialisation._id.toString())).length
                     : 0;
-            
-                const estOccupe = entretiensEnCours.some(entretien =>
-                    entretien.users.some(user => user._id.toString() === userId)
-                );
-            
+
+                const estOccupe = await this.getAssignTaskByPersonnel(new Date(detailEntretien.entretien.date), mecanicien._id);
+
                 return {
                     user: mecanicien,
-                    specialisations, 
+                    specialisations,
                     correspondanceCount,
                     estOccupe
                 };
-            });
+            }));
             
 
         ordreMecaniciens.sort((a, b) => {
@@ -290,6 +288,28 @@ exports.getEntretienDetailByDateByPersonnel = async (date,userId) => {
         return detailsEntretien;
     } catch (error) {
         console.error('Error fetching entretiens:', error);
+    }
+};
+
+exports.getAssignTaskByPersonnel = async (date,userId) => {
+    try {
+        const startOfDay = new Date(date);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        const entretiens = await Entretien.find({
+            date: { $gte: startOfDay, $lte: endOfDay }
+        }).select('_id');
+
+        const count = await DetailEntretien.countDocuments({
+            entretien: { $in: entretiens },
+            users: userId
+        });
+        return count || 0;
+    } catch (error) {
+        console.error('Error getting DetailEntretien count:', error);
+        throw error;
     }
 };
 
