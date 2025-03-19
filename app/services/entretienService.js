@@ -4,6 +4,7 @@ const User = require("../models/User");
 const SpecialisationPersonnel = require("../models/SpecialisationPersonnel");
 const mongoose = require('mongoose');
 const moment = require('moment');
+const Role = require("../models/Role");
 
 exports.createEntretien= async ( date, vehiculeId ) => {
     try {
@@ -161,9 +162,16 @@ exports.getEntretienDetailByDate = async (date) => {
                     path: 'entretien',
                     populate: {
                         path: 'vehicule',
+                        populate: {
+                            path: 'modele',
+                            populate: {
+                                path: 'marque'
+                            }
+                        }
                     }
                 }
-            ]);
+            ])
+            .populate('typeEntretien');
 
         return detailsEntretien;
     } catch (error) {
@@ -177,5 +185,25 @@ exports.getDetailEntretienById = async (detailEntretienId) => {
         return detailEntretien;
     } catch (error) {
         console.error('Error get Detail:', error);
+    }
+};
+
+
+exports.updateStatusDetail = async (detailEntretienId, etatCode, etatLibelle) => {
+    try {
+        const existingDetail = await DetailEntretien.findById(detailEntretienId);
+        if (!existingDetail) {
+            return res.status(404).json({ message: 'Entretien non trouvé' });
+        }
+
+        existingDetail.etat = {
+            code: etatCode,
+            libelle: etatLibelle
+        };
+        await existingDetail.save();
+        return existingDetail._id;
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
