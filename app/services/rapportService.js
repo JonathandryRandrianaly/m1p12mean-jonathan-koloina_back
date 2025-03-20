@@ -13,7 +13,15 @@ const storage = multer.diskStorage({
 
 
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = ["image/png", "image/jpeg", "application/pdf", "application/vnd.ms-excel"];
+    const allowedTypes = [
+        "image/png",
+        "image/jpeg",
+        "application/pdf",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
+        "text/plain"
+    ];
+
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
@@ -21,23 +29,42 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+
 const upload = multer({ storage, fileFilter });
 
-exports.createRapport = async (libelle, prix, files) => {
+exports.createRapport = async (libelle, prix, justificatifs) => {
     try {
-        const fichiers = files.map(file => ({
-            filename: file.filename,
-            path: `/uploads/${file.filename}`, 
-            contentType: file.mimetype,
-            size: file.size
-        }));
+        let fichiers = []; 
 
-        const newRapport = new Rapport({ libelle, prix, justificatifs: fichiers });
+        if (justificatifs && justificatifs.length > 0) {
+            fichiers = justificatifs.map(file => ({
+                filename: file.filename,
+                path: `/uploads/${file.filename}`,
+                contentType: file.mimetype,
+                size: file.size
+            }));
+        }
+
+        const rapportData = { libelle };
+
+        if (prix !== null && prix !== undefined && prix !== "" && !isNaN(Number(prix))) {
+            rapportData.prix = Number(prix); 
+        }
+
+        if (fichiers.length > 0) {
+            rapportData.justificatifs = fichiers;
+        }
+
+        const newRapport = new Rapport(rapportData);
         await newRapport.save();
+
         return newRapport._id;
+
     } catch (error) {
         console.error('Error adding upload:', error);
     }
 };
+
+
 
 exports.upload = upload;
