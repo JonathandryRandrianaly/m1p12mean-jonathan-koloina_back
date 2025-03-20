@@ -64,18 +64,15 @@ exports.createDetailFacture = async (factureId, entretienId, prix) => {
 
 exports.assignEntretienToFacture = async (factureId, entretienId) => {
     try {
-        const result = await DetailFacture.aggregate([
-            { $match: { entretien: entretienId } },
-            { $group: { _id: null, totalPrix: { $sum: "$prix" } } }
-        ]);
-
-        let prixTotal = result.length > 0 ? result[0].totalPrix : 0;
+        let prixTotal = 0;
 
         const detailEntretiens = await DetailEntretien.find({ entretien: entretienId }).select('_id');
 
         for (let detailEntretien of detailEntretiens) {
+            const entretienPrix = await entretienService.getSumEntretienPrice(detailEntretien._id);
             const rapportPrix = await entretienService.getSumRapportPrice(detailEntretien._id);
             prixTotal += rapportPrix;
+            prixTotal += entretienPrix;
         }
 
         await this.createDetailFacture(factureId, entretienId, prixTotal);
