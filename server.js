@@ -4,6 +4,8 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
+const path = require('path');
+const uploadsPath = path.join(__dirname, 'app', 'uploads');
 
 const roleRoute = require('./app/routes/roleRoute');
 const authRoute = require('./app/routes/authRoute');
@@ -27,6 +29,7 @@ const entretienRoute = require('./app/routes/entretienRoute');
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(uploadsPath));
 
 // Connexion à MongoDB
 mongoose.connect(process.env.MONGO_URI)

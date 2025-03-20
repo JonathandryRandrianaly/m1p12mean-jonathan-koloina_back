@@ -205,7 +205,8 @@ exports.getDetailEntretienById = async (detailEntretienId) => {
         .populate({
             path:'users',
             select:'nom'
-        });
+        })
+        .populate('rapports');
         return detailEntretien;
     } catch (error) {
         console.error('Error get Detail:', error);
