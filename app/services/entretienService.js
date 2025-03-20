@@ -313,31 +313,20 @@ exports.getAssignTaskByPersonnel = async (date,userId) => {
     }
 };
 
-exports.updateDateDetailEntretien = async ({detailEntretienId, dateDebut, dateFin}) => {
+exports.updateDateDetailEntretien = async (detailEntretienId, dateDebut, dateFin) => {
     try {
-        const detailEntretien = await DetailEntretien.findById(detailEntretienId);
-        if(dateDebut || dateFin){
-            if(dateDebut){
+        const detailEntretien = await DetailEntretien.findById(detailEntretienId).populate('entretien');
+        let success = false;
+        if(dateDebut !== ''){
+            if(detailEntretien.entretien.date <= new Date(dateDebut)){
                 detailEntretien.dateDebut = dateDebut;
-                success = true;
+                success =true;
             }
-            if(dateFin){
-                if(dateDebut){
-                    if(new Date(dateFin)>=new Date(dateDebut)){
-                        detailEntretien.dateFin = dateFin;
-                        success = true;
-                    }else{
-                        success = false;
-                    }
-                }else{
-                    if(new Date(dateFin)>=detailEntretien.dateDebut){
-                        detailEntretien.dateFin = dateFin;
-                        success = true;
-                    }
-                    else{
-                        success = false;
-                    }
-                }
+        }
+        if(dateFin !== ''){
+            if(detailEntretien.entretien.date <= new Date(dateFin)){
+                detailEntretien.dateFin = dateFin;
+                success =true;
             }
         }
         if(success === true){
