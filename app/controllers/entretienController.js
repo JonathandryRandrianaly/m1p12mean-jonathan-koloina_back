@@ -1,6 +1,8 @@
 const entretienService = require("../services/entretienService");
+const DetailEntretien = require("../models/DetailEntretien");
 const User = require("../models/User");
 const Role = require("../models/Role");
+const factureService = require("../services/factureService");
 
 exports.enregistrerDemandeService= async (req, res) => {
     const { date, vehiculeId, typeEntretiens } = req.body;
@@ -79,6 +81,10 @@ exports.updateStatusDetail = async (req, res) => {
     const { detailEntretienId, etatCode, etatLibelle } = req.body;
     try {
         const entretiens = await entretienService.updateStatusDetail(detailEntretienId,etatCode,etatLibelle);
+        detailEntretien = await DetailEntretien.findById(detailEntretienId);
+        if(etatCode===20) {
+            await factureService.checkFacture(detailEntretien.entretien);
+        }
         return res.status(200).json({
             message: 'Status changed successfully',
             detailEntretienId: entretiens

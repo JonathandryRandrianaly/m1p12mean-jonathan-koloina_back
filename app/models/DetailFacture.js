@@ -7,7 +7,8 @@ const detailFactureSchema = new mongoose.Schema({
     },
     entretien: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Entretien'
+        ref: 'Entretien',
+        unique: true
     },
     prix: {
         type: Number,
