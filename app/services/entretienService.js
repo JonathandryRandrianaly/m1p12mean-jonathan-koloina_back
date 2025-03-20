@@ -427,3 +427,112 @@ exports.getHistoriquesEntretienByVehicule = async ({
     }
 };
 
+exports.getEntretienByClientByDate = async (entretienId) => {
+    try {
+        const entretien = await Entretien.findById(entretienId);
+        if (!entretien) throw new Error('Entretien introuvable');
+
+        const vehicule = await Vehicule.findById(entretien.vehicule).select('proprietaire');
+        if (!vehicule) throw new Error('Véhicule introuvable');
+
+        const vehiculesClient = await Vehicule.find({
+            proprietaire: vehicule.proprietaire
+        }).select('_id');
+
+        const startOfDay = new Date(entretien.date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(entretien.date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        return await Entretien.find({
+            date: { $gte: startOfDay, $lte: endOfDay },
+            vehicule: { $in: vehiculesClient.map(v => v._id) }
+        }).select('_id');
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération des entretiens :', error.message);
+        throw new Error('Erreur lors de la récupération des entretiens.');
+    }
+};
+
+exports.getEntretienActif = async (entretienIds) => {
+    try {
+        return await Entretien.find({
+            _id: { $in: entretienIds },
+            'etat.code': 0
+        }).select('_id');
+    } catch (error) {
+        console.error('Error checking entretiens status:', error);
+        throw error;
+    }
+};
+
+exports.checkEntretienStatus = async (actifIds) => {
+    try {
+        const count = await DetailEntretien.countDocuments({
+            entretien: { $in: actifIds },
+            'etat.code': { $ne: 20 }
+        });
+        return count === 0;
+    } catch (error) {
+        console.error('Error checking entretiens status:', error);
+        throw error;
+    }
+};
+
+exports.getSumRapportPrice = async (detailEntretienId) => {
+    try {
+        if (!(detailEntretienId instanceof mongoose.Types.ObjectId)) {
+            detailEntretienId = mongoose.Types.ObjectId(detailEntretienId);
+        }
+
+        const result = await DetailEntretien.aggregate([
+            { $match: { _id: detailEntretienId } },
+            { $lookup: {
+                    from: 'rapports',
+                    localField: 'rapports',
+                    foreignField: '_id',
+                    as: 'rapportDetails'
+                }},
+            { $unwind: { path: "$rapportDetails", preserveNullAndEmptyArrays: true } },
+            { $group: {
+                    _id: "$_id",
+                    totalPrix: { $sum: { $ifNull: ["$rapportDetails.prix", 0] } }
+                }}
+        ]);
+
+        return result.length > 0 ? result[0].totalPrix : 0;
+    } catch (error) {
+        console.error('Erreur lors de la récupération des prix des rapports:', error.message);
+        throw new Error("Erreur lors de la récupération des prix des rapports.");
+    }
+};
+
+exports.getSumEntretienPrice = async (detailEntretienId) => {
+    try {
+        // Vérification du type de detailEntretienId et conversion si nécessaire
+        if (!(detailEntretienId instanceof mongoose.Types.ObjectId)) {
+            detailEntretienId = mongoose.Types.ObjectId(detailEntretienId);
+        }
+
+        const result = await DetailEntretien.aggregate([
+            { $match: { _id: detailEntretienId } },
+            { $lookup: {
+                    from: 'typeentretiens',  // Nom de la collection TypeEntretien (attention à la casse)
+                    localField: 'typeEntretien',  // Assurez-vous que ce champ est correct
+                    foreignField: '_id',  // Le champ clé dans la collection TypeEntretien
+                    as: 'typeEntretienDetails'  // L'alias des résultats de la jointure
+                }},
+            { $unwind: { path: "$typeEntretienDetails", preserveNullAndEmptyArrays: true } },
+            { $group: {
+                    _id: "$_id",
+                    totalPrix: { $sum: { $ifNull: ["$typeEntretienDetails.prix", 0] } }  // Utiliser le prix du TypeEntretien
+                }}
+        ]);
+
+        return result.length > 0 ? result[0].totalPrix : 0;
+    } catch (error) {
+        console.error('Erreur lors de la récupération des prix des entretiens:', error.message);
+        throw new Error("Erreur lors de la récupération des prix des entretiens.");
+    }
+};
