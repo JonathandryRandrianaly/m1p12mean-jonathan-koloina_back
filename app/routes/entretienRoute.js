@@ -6,6 +6,7 @@ const authController = require("../controllers/authController");
 const rapportController = require("../controllers/rapportController");
 const rapportService = require("../services/rapportService");
 
+router.get('/entretiens/historiques/vehicule', authorizeRoles('mecanicien','manager','client'), entretienController.getHistoriquesEntretienByVehicule);
 router.get('/entretien/mecaniciens/:detailEntretienId', authorizeRoles('manager'), entretienController.getOrdreMecaniciens);
 router.get('/entretiens/month/:month', authorizeRoles('manager'), entretienController.getEntretienByMonth);
 router.get('/entretiens/detail/:date', authorizeRoles('manager'), entretienController.getEntretienDetailByDate);
