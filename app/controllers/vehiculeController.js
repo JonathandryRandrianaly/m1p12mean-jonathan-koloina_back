@@ -50,7 +50,7 @@ exports.updateEtatVehicule = async (req, res) => {
 exports.getAllVehiculeByProprio = async (req, res) => {
     const { proprietaire } = req.params;
     try {
-        const vehicules = await Vehicule.find({ proprietaire })
+        const vehicules = await Vehicule.find({ proprietaire , 'etat.code': 10 })
         .populate([
             { path: 'modele', populate: { path: 'marque' } },
             { path: 'modele', populate: { path: 'categorie' } }

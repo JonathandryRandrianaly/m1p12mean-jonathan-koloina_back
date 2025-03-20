@@ -121,3 +121,14 @@ exports.updateDateDetailEntretien= async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.getHistoriquesEntretienByVehicule= async (req, res) => {
+    const searchParams = req.query;
+    try {
+        const result = await entretienService.getHistoriquesEntretienByVehicule(searchParams);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};

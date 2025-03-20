@@ -349,3 +349,81 @@ exports.addRapportDetail = async (detailEntretienId, rapportId) => {
         console.error('Error get Rdv:', error);
     }
 };
+
+exports.getHistoriquesEntretienByVehicule = async ({ 
+    vehiculeId, 
+    page = 1, 
+    limit = 10, 
+    typesEntretien = [],
+    etats = [],
+    dateMin = '',
+    dateMax = '',
+}) => {
+    const pageNumber = parseInt(page);
+    const pageSize = parseInt(limit);
+
+    try {
+        const vehicule = await Vehicule.findById(vehiculeId)
+            .populate({ path: 'modele', select: 'nom' });
+
+        if (!vehicule) {
+            return { error: "Véhicule non trouvé" };
+        }
+
+        const entretiens = await Entretien.find({ vehicule: vehiculeId });
+
+        let query = { entretien: { $in: entretiens.map(e => e._id) } };
+
+        if (etats.length > 0) {
+            query['etat.code'] = { $in: etats };
+        }
+
+        if (typesEntretien.length > 0) {
+            query.typeEntretien = { $in: typesEntretien.map(typeId => new mongoose.Types.ObjectId(typeId)) };
+        }
+
+        if (dateMin || dateMax) {
+            query.$or = [];
+
+            if (dateMin) {
+                query.$or.push({ dateDebut: { $exists: true, $gte: new Date(dateMin) } });
+            }
+            if (dateMax) {
+                query.$or.push({ dateFin: { $exists: true, $lte: new Date(dateMax) } });
+            }
+
+            if (dateMin && dateMax) {
+                query.$and = [
+                    { dateDebut: { $exists: true, $gte: new Date(dateMin) } },
+                    { dateFin: { $exists: true, $lte: new Date(dateMax) } }
+                ];
+                delete query.$or;
+            }
+        }
+
+        const totalItems = await DetailEntretien.countDocuments(query);
+
+        let detailsEntretiens = await DetailEntretien.find(query)
+            .populate({ path: 'entretien', select: 'date kilometrage' })
+            .populate({ path: 'typeEntretien', select: 'nom description prix' })
+            .populate({ path: 'users', select: 'nom' });
+
+        detailsEntretiens.sort((a, b) => {
+            const dateA = a.entretien?.date ? new Date(a.entretien.date) : new Date(0);
+            const dateB = b.entretien?.date ? new Date(b.entretien.date) : new Date(0);
+            return dateB - dateA; 
+        });
+
+        const paginatedDetails = detailsEntretiens.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+
+        return {
+            totalItems,
+            vehicule: vehicule,
+            details: paginatedDetails,
+        };
+    } catch (error) {
+        console.error('Error get Historiques:', error);
+        return { error: 'Erreur lors de la récupération des historiques' };
+    }
+};
+
