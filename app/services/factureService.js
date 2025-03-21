@@ -48,11 +48,11 @@ exports.createFacture = async (date) => {
     }
 };
 
-exports.createDetailFacture = async (factureId, entretienId, prix) => {
+exports.createDetailFacture = async (factureId, detailEntretienId, prix) => {
     try {
         const newDetail = new DetailFacture({
             facture: factureId,
-            entretien: entretienId,
+            detailEntretien: detailEntretienId,
             prix: prix
         });
         await newDetail.save();
@@ -64,18 +64,12 @@ exports.createDetailFacture = async (factureId, entretienId, prix) => {
 
 exports.assignEntretienToFacture = async (factureId, entretienId) => {
     try {
-        let prixTotal = 0;
-
-        const detailEntretiens = await DetailEntretien.find({ entretien: entretienId }).select('_id');
+        const detailEntretiens = await entretienService.getDetailEntretienByEntretien(entretienId);
 
         for (let detailEntretien of detailEntretiens) {
-            const entretienPrix = await entretienService.getSumEntretienPrice(detailEntretien._id);
-            const rapportPrix = await entretienService.getSumRapportPrice(detailEntretien._id);
-            prixTotal += rapportPrix;
-            prixTotal += entretienPrix;
+            await this.createDetailFacture(factureId, detailEntretien._id, detailEntretien.typeEntretien.prix);
         }
 
-        await this.createDetailFacture(factureId, entretienId, prixTotal);
     } catch (error) {
         console.error("Erreur lors de l'attribution de l'entretien à la facture :", error.message);
         throw new Error("Erreur lors de l'attribution de l'entretien à la facture.");

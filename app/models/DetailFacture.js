@@ -5,9 +5,9 @@ const detailFactureSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Facture'
     },
-    entretien: {
+    detailEntretien: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Entretien',
+        ref: 'DetailEntretien',
         unique: true
     },
     prix: {
