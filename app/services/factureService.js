@@ -19,11 +19,16 @@ exports.checkFacture = async (entretienId) => {
 
         if (isFacturable) {
 
-            const entretienDateModel = await Entretien.findById(entretienId).select('date');
+            const entretienModel = await Entretien.findById(entretienId)
+                .populate({
+                    path: "vehicule",
+                    select: "proprietaire",
+                });
 
-            const entretienDate = entretienDateModel.date;
+            const entretienDate = entretienModel.date;
+            const entretienClient = entretienModel.vehicule.proprietaire;
 
-            const factureId = await this.createFacture(entretienDate);
+            const factureId = await this.createFacture(entretienDate,entretienClient);
             for (let entretien of actifIds) {
                 await this.assignEntretienToFacture(factureId, entretien);
             }
@@ -34,10 +39,11 @@ exports.checkFacture = async (entretienId) => {
     }
 };
 
-exports.createFacture = async (date) => {
+exports.createFacture = async (date,userId) => {
     try {
         const newFacture = new Facture({
             date: date,
+            client: userId,
             etat: { code: -10, libelle: 'Non payé' }
         });
         await newFacture.save();
