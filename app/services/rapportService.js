@@ -1,6 +1,7 @@
 const Rapport = require('../models/Rapport');
 const multer = require("multer");
 const path = require("path");
+const DetailEntretien = require('../models/DetailEntretien');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -64,13 +65,25 @@ exports.createRapport = async (libelle, prix, justificatifs) => {
 };
 
 exports.removeJustificatifsRapport = async (rapportId, fileId) => {
-    try {;
+    try {
        await Rapport.updateOne(
-        { _id: rapportId },
-        { $pull: { justificatifs: { _id: fileId } } }
-    );
+            { _id: rapportId },
+            { $pull: { justificatifs: { _id: fileId } } }
+        );
     } catch (error) {
-        console.error('Error adding upload:', error);
+        console.error('Error remove justificatifs:', error);
+    }
+};
+
+exports.removeRapport = async (rapportId) => {
+    try {
+        await Rapport.deleteOne({ _id: rapportId });
+        await DetailEntretien.updateMany(
+            { rapports: rapportId },  
+            { $pull: { rapports: rapportId } } 
+        );
+    } catch (error) {
+        console.error('Error remove rapport:', error);
     }
 };
 

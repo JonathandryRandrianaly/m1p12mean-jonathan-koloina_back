@@ -26,3 +26,14 @@ exports.removeJustificatifsRapport = async (req, res) => {
         res.status(500).json({ message: "Erreur interne du serveur" });
     }
 };
+
+exports.removeRapport = async (req, res) => {
+    try {
+        const { rapportId} = req.params;
+        rapportService.removeRapport(rapportId);
+        res.status(201).json({ success: true});
+    } catch (error) {
+        console.error('Erreur lors de removeRapport:', error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+};
