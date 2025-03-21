@@ -87,5 +87,29 @@ exports.removeRapport = async (rapportId) => {
     }
 };
 
+exports.addJustificatifs = async (rapportId, justificatifs) => {
+    try {
+        if (!justificatifs || justificatifs.length === 0) {
+            throw new Error("Aucun justificatif fourni");
+        }
+
+        const fichiers = justificatifs.map(file => ({
+            filename: file.filename,
+            path: `/uploads/${file.filename}`,
+            contentType: file.mimetype,
+            size: file.size
+        }));
+
+        await Rapport.updateOne(
+            { _id: rapportId },
+            { $push: { justificatifs: { $each: fichiers } } }
+        );
+
+    } catch (error) {
+        console.error('Error adding justificatifs:', error);
+    }
+};
+
+
 
 exports.upload = upload;
