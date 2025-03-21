@@ -162,3 +162,28 @@ exports.getMontantFacture = async (factureId) => {
         throw new Error('Erreur lors du calcul du montant total de la facture.');
     }
 };
+
+exports.getFullDetailFactureByFacture = async (factureId) => {
+    try {
+        return await DetailFacture.find({ facture: factureId })
+            .populate({
+                path: 'detailEntretien',
+                populate: [
+                    {
+                        path: 'entretien',
+                        populate: {
+                            path: 'vehicule',
+                            populate: {
+                                path: 'proprietaire',
+                            }
+                        }
+                    },
+                    { path: 'typeEntretien' },
+                    { path: 'rapports' }
+                ]
+            });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des détails de facture :', error.message);
+        throw new Error('Erreur lors de la récupération des détails de facture.');
+    }
+};
