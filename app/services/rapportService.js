@@ -11,7 +11,6 @@ const storage = multer.diskStorage({
     }
 });
 
-
 const fileFilter = (req, file, cb) => {
     const allowedTypes = [
         "image/png",
@@ -28,7 +27,6 @@ const fileFilter = (req, file, cb) => {
         cb(new Error("Format de fichier non supporté"), false);
     }
 };
-
 
 const upload = multer({ storage, fileFilter });
 
@@ -65,6 +63,16 @@ exports.createRapport = async (libelle, prix, justificatifs) => {
     }
 };
 
+exports.removeJustificatifsRapport = async (rapportId, fileId) => {
+    try {;
+       await Rapport.updateOne(
+        { _id: rapportId },
+        { $pull: { justificatifs: { _id: fileId } } }
+    );
+    } catch (error) {
+        console.error('Error adding upload:', error);
+    }
+};
 
 
 exports.upload = upload;

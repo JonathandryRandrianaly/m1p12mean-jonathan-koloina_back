@@ -19,5 +19,6 @@ router.post('/entretien/mecanicien/assigner', authorizeRoles('manager'), entreti
 router.post('/entretien/update-status', authorizeRoles('mecanicien','manager'), entretienController.updateStatusDetail);
 router.post('/entretien/details/update-date', authorizeRoles('manager'), entretienController.updateDateDetailEntretien);
 router.post("/entretien/rapport", rapportService.upload.array("justificatifs", 5), rapportController.createRapport);
+router.post("/entretien/rapport/remove-fichier", rapportController.removeJustificatifsRapport);
 
 module.exports = router;
