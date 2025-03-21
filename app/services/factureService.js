@@ -81,3 +81,84 @@ exports.assignEntretienToFacture = async (factureId, entretienId) => {
         throw new Error("Erreur lors de l'attribution de l'entretien à la facture.");
     }
 };
+
+exports.searchFactures = async ({
+                                    page = 1,
+                                    limit = 10,
+                                    sortedColumn = 'date',
+                                    sortDirection = 'desc',
+                                    id = '',
+                                    client = '',
+                                    date = '',
+                                    etats = []
+                                }) => {
+    const defaultSortedColumn = sortedColumn || 'date';
+    const pageNumber = parseInt(page);
+    const pageSize = parseInt(limit);
+    const sortOrder = sortDirection === 'desc' ? -1 : 1;
+
+    let query = {};
+
+    if (id) {
+        query._id = { $regex: id, $options: 'i' };
+    }
+
+    if (client) {
+        query.client = new mongoose.Types.ObjectId(client);
+    }
+
+    if (date) {
+        const startDate = new Date(date);
+        const endDate = new Date(date);
+        endDate.setHours(23, 59, 59, 999);
+        query.date = { $gte: startDate, $lte: endDate };
+    }
+
+    if (etats.length > 0) {
+        query['etat.code'] = { $in: etats };
+    }
+
+    const totalItems = await Facture.countDocuments(query);
+
+    let factures = await Facture.find(query)
+        .sort({ [defaultSortedColumn]: sortOrder })
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize)
+        .lean();
+
+    for (let facture of factures) {
+        facture.montantTotal = await this.getMontantFacture(facture._id);
+    }
+
+    return { totalItems, items: factures };
+};
+
+exports.getDetailFactureByFacture = async (factureId) => {
+    try {
+        return await DetailFacture.find({ facture: factureId }).lean();
+    } catch (error) {
+        console.error('Erreur lors de la récupération des détails de facture :', error.message);
+        throw new Error('Erreur lors de la récupération des détails de facture.');
+    }
+};
+
+exports.getMontantFacture = async (factureId) => {
+    try {
+        let prixTotal = 0;
+        const detailFactures = await this.getDetailFactureByFacture(factureId);
+
+        const prixPromises = detailFactures.map(async (detailFacture) => {
+            const rapportPrice = await entretienService.getSumRapportPrice(detailFacture.detailEntretien);
+            const entretienPrice = await entretienService.getSumEntretienPrice(detailFacture.detailEntretien);
+            return rapportPrice + entretienPrice;
+        });
+
+        const prixResults = await Promise.all(prixPromises);
+        prixTotal = prixResults.reduce((sum, value) => sum + value, 0);
+
+        return prixTotal;
+    } catch (error) {
+        console.error('Erreur lors du calcul du montant total de la facture :', error.message);
+        throw new Error('Erreur lors du calcul du montant total de la facture.');
+    }
+};
