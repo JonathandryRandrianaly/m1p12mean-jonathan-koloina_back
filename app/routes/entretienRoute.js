@@ -5,6 +5,7 @@ const { authorizeRoles } = require('../middlewares/authMiddleware');
 const authController = require("../controllers/authController");
 const rapportController = require("../controllers/rapportController");
 const rapportService = require("../services/rapportService");
+const stockController = require('../controllers/stockController');
 
 router.get('/entretiens/historiques/vehicule', authorizeRoles('mecanicien','manager','client'), entretienController.getHistoriquesEntretienByVehicule);
 router.get('/entretien/mecaniciens/:detailEntretienId', authorizeRoles('manager'), entretienController.getOrdreMecaniciens);
@@ -21,6 +22,7 @@ router.post('/entretien/details/update-date', authorizeRoles('manager'), entreti
 router.post('/entretien/rapport', rapportService.upload.array("justificatifs", 5), authorizeRoles('manager','mecanicien'), rapportController.createRapport);
 router.post('/entretien/rapport/justificatifs', rapportService.upload.array("justificatifs", 5), authorizeRoles('manager','mecanicien'), rapportController.addJustificatifs);
 router.post('/entretien/rapport/remove-fichier',authorizeRoles('manager','mecanicien'), rapportController.removeJustificatifsRapport);
+router.post('/entretien/consommable/stock',authorizeRoles('manager','mecanicien'), stockController.sortieStockConsommables);
 router.post('/entretien/rapport/remove/:rapportId',authorizeRoles('manager','mecanicien'), rapportController.removeRapport);
 
 module.exports = router;

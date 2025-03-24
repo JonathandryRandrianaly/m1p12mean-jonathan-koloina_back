@@ -66,7 +66,7 @@ exports.createMouvementStock= async (date, dateDebut, consommableId, libelle, ty
         });
         await stock.save();
 
-        return true;
+        return {result: true, id: stock._id};
     } catch (error) {
         console.error(error);
         return error;
