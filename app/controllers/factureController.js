@@ -1,5 +1,7 @@
 const factureService = require("../services/factureService");
 const Facture = require("../models/Facture");
+const entretienService = require("../services/entretienService");
+const DetailEntretien = require("../models/DetailEntretien");
 
 exports.checkFacture= async (req, res) => {
     const { entretienId } = req.params;
@@ -55,6 +57,32 @@ exports.getFullFacture = async (req, res) => {
         const factures = await Facture.findById(factureId).populate({
             path: 'client',
         })
+        return res.status(200).json(factures);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.setEtatPaiement = async (req, res) => {
+    const { factureId, etatCode, etatLibelle } = req.body;
+    try {
+        const facture = await factureService.updateEtatPaiement(factureId,etatCode,etatLibelle);
+        return res.status(200).json({
+            message: 'Status changed successfully',
+            factureId: facture
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.getTotalPaiement= async (req, res) => {
+    const { factureId } = req.params;
+
+    try {
+        const factures = await factureService.getMontantFacture(factureId);
         return res.status(200).json(factures);
     } catch (error) {
         console.error(error);
