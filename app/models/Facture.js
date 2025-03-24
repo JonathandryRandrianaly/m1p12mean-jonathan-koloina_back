@@ -5,6 +5,11 @@ const factureSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    client: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     etat: {
         type: {
             code: { type: Number, required: true }, // 10: payé -10:non payé

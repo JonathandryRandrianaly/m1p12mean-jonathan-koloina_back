@@ -455,6 +455,18 @@ exports.getEntretienByClientByDate = async (entretienId) => {
     }
 };
 
+exports.getDetailEntretienByEntretien = async (entretienId) => {
+    try {
+        return await DetailEntretien.find({
+            entretien: entretienId
+        }).populate('typeEntretien');
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération des details entretiens :', error.message);
+        throw new Error('Erreur lors de la récupération des details entretiens.');
+    }
+};
+
 exports.getEntretienActif = async (entretienIds) => {
     try {
         return await Entretien.find({
@@ -510,7 +522,6 @@ exports.getSumRapportPrice = async (detailEntretienId) => {
 
 exports.getSumEntretienPrice = async (detailEntretienId) => {
     try {
-        // Vérification du type de detailEntretienId et conversion si nécessaire
         if (!(detailEntretienId instanceof mongoose.Types.ObjectId)) {
             detailEntretienId = mongoose.Types.ObjectId(detailEntretienId);
         }
@@ -518,15 +529,15 @@ exports.getSumEntretienPrice = async (detailEntretienId) => {
         const result = await DetailEntretien.aggregate([
             { $match: { _id: detailEntretienId } },
             { $lookup: {
-                    from: 'typeentretiens',  // Nom de la collection TypeEntretien (attention à la casse)
-                    localField: 'typeEntretien',  // Assurez-vous que ce champ est correct
-                    foreignField: '_id',  // Le champ clé dans la collection TypeEntretien
-                    as: 'typeEntretienDetails'  // L'alias des résultats de la jointure
+                    from: 'typeentretiens',
+                    localField: 'typeEntretien',
+                    foreignField: '_id',
+                    as: 'typeEntretienDetails'
                 }},
             { $unwind: { path: "$typeEntretienDetails", preserveNullAndEmptyArrays: true } },
             { $group: {
                     _id: "$_id",
-                    totalPrix: { $sum: { $ifNull: ["$typeEntretienDetails.prix", 0] } }  // Utiliser le prix du TypeEntretien
+                    totalPrix: { $sum: { $ifNull: ["$typeEntretienDetails.prix", 0] } }
                 }}
         ]);
 
