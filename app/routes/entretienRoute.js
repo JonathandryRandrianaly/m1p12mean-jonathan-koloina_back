@@ -23,6 +23,7 @@ router.post('/entretien/rapport', rapportService.upload.array("justificatifs", 5
 router.post('/entretien/rapport/justificatifs', rapportService.upload.array("justificatifs", 5), authorizeRoles('manager','mecanicien'), rapportController.addJustificatifs);
 router.post('/entretien/rapport/remove-fichier',authorizeRoles('manager','mecanicien'), rapportController.removeJustificatifsRapport);
 router.post('/entretien/consommable/stock',authorizeRoles('manager','mecanicien'), stockController.sortieStockConsommables);
+router.post('/entretien/rdv/annuler',authorizeRoles('manager','client'), entretienController.annulerRdv);
 router.post('/entretien/rapport/remove/:rapportId',authorizeRoles('manager','mecanicien'), rapportController.removeRapport);
 
 module.exports = router;

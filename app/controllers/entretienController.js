@@ -138,3 +138,14 @@ exports.getHistoriquesEntretienByVehicule= async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.annulerRdv= async (req, res) => {
+    const { detailEntretienId } = req.body;
+    try {
+        const result = await entretienService.annulerRdv(detailEntretienId);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};

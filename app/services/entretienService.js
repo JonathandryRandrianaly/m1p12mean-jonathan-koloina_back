@@ -250,7 +250,7 @@ exports.getRdvByClient = async (clientId) => {
         const entretiens = await Entretien.find({vehicule: { $in: vehicules}})
         .populate('vehicule')
         .sort({date: -1});
-        const detailsEntretiens= await DetailEntretien.find({entretien: {$in: entretiens}, 'etat.code': { $ne: 20 }})
+        const detailsEntretiens= await DetailEntretien.find({entretien: {$in: entretiens}, 'etat.code': { $ne: 20 }, 'etat.code': { $ne: -20 }})
         .populate({path: 'entretien', populate: 'vehicule'})
         .populate('typeEntretien')
         .populate('users');
@@ -568,5 +568,15 @@ exports.addSortieStockEntretien = async (detailEntretienId, stockId) => {
         );
     } catch (error) {
         console.error('Erreur lors de sortie stock entretien :', error.message);
+    }
+};
+
+exports.annulerRdv = async (detailEntretienId) => {
+    try {
+        const detailEntretien = await DetailEntretien.findById(detailEntretienId);
+        detailEntretien.etat= { code: -20, libelle: 'Annulé' };
+        await detailEntretien.save();
+    } catch (error) {
+        console.error('Erreur lors de annulation rdv :', error);
     }
 };
