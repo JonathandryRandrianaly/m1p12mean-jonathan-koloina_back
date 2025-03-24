@@ -1,5 +1,7 @@
 const CategorieEntretien = require('../models/CategorieEntretien');
+const TypeEntretien = require('../models/TypeEntretien');
 const searchService = require('../services/searchService');
+const mongoose = require("mongoose");
 
 exports.createCategorieEntretien = async (req, res) => {
     const { nom, icone, description } = req.body;
@@ -72,6 +74,37 @@ exports.getAllCategorieEntretienByStatut = async (req, res) => {
             return res.status(200).json(categorieEntretiens);
         } else {
             return res.status(404).json({ message: 'Aucune categorie trouvée.' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.getAllCategorieEntretienByStatutWithMinPrice = async (req, res) => {
+    const { statut } = req.params;
+    const { categorieModeleId } = req.query;
+    try {
+        const categorieEntretiens = await CategorieEntretien.find({'etat.code': statut}).lean();
+
+        if (categorieEntretiens.length > 0) {
+            for (let categorie of categorieEntretiens) {
+                const filter = { categorieEntretien: categorie._id };
+
+                if (categorieModeleId) {
+                    filter.categorieModele = new mongoose.Types.ObjectId(categorieModeleId._id);
+                }
+
+                const prixMin = await TypeEntretien.find(filter)
+                    .sort({ prix: 1 })
+                    .limit(1)
+                    .select('prix');
+
+                categorie.prixMinimum = prixMin.length > 0 ? prixMin[0].prix : 0;
+            }
+            return res.status(200).json(categorieEntretiens);
+        } else {
+            return res.status(404).json({ message: 'Aucune catégorie trouvée.' });
         }
     } catch (error) {
         console.error(error);
