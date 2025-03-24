@@ -187,3 +187,22 @@ exports.getFullDetailFactureByFacture = async (factureId) => {
         throw new Error('Erreur lors de la récupération des détails de facture.');
     }
 };
+
+exports.updateEtatPaiement = async (factureId, etatCode, etatLibelle) => {
+    try {
+        const existingFacture = await Facture.findById(factureId);
+        if (!existingFacture) {
+            return res.status(404).json({ message: 'Facture non trouvé' });
+        }
+
+        existingFacture.etat = {
+            code: etatCode,
+            libelle: etatLibelle
+        };
+        await existingFacture.save();
+        return existingFacture._id;
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
