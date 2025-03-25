@@ -40,3 +40,14 @@ exports.getNombreMoyenRdv = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
+exports.getInterventionsParCategories = async (req, res) => {
+    try {
+        const periode =req.query
+        const result = await statistiqueService.getInterventionsParCategories(periode);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('Error', error);
+        res.status(500).send('Server error');
+    }
+};
