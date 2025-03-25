@@ -75,23 +75,16 @@ exports.getNombreMoyenRdv = async (type) => {
 
 exports.getInterventionsParCategories = async ({mois,annee}) => {
     try {
+        console.log('mois '+mois);
+        console.log('annee '+annee);
         const total = await DetailEntretien.countDocuments();
         if (total === 0) {
             return []; 
         }
 
-        const groupCondition = {
-            categorie: "$categorie.nom",  
-        };
-
-        if (mois && annee) {
-            groupCondition.mois = "$month";
-            groupCondition.annee = "$year";
-        } else if (annee) {
-            groupCondition.annee = "$year";
-        } else {
-            groupCondition.annee = "$year";
-        }
+        const matchStage = {};
+        if (annee) matchStage.year = { $eq: Number(annee) };
+        if (mois) matchStage.month = { $eq: Number(mois) };
 
         const result = await DetailEntretien.aggregate([
             {
@@ -133,9 +126,12 @@ exports.getInterventionsParCategories = async ({mois,annee}) => {
                     month: { $month: "$entretien.date" },
                 }
             },
+            { 
+                $match: matchStage
+            },
             {
                 $group: {
-                    _id: groupCondition, 
+                    _id: { categorie: "$categorie.nom" },
                     count: { $sum: 1 } 
                 }
             },
