@@ -10,3 +10,13 @@ exports.getNombrePersonnel = async () => {
         throw new Error('Erreur lors de get nbr personnel');
     }
 };
+
+exports.getNombreClient = async () => {
+    try {
+        const role = await Role.find({libelle : 'client'});
+        const result = await User.countDocuments({roles: { $in: role }});
+        return result;
+    } catch (error) {
+        throw new Error('Erreur lors de get nbr client');
+    }
+};
