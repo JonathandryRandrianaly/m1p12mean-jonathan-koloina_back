@@ -32,6 +32,8 @@ exports.checkFacture = async (entretienId) => {
             for (let entretien of actifIds) {
                 await this.assignEntretienToFacture(factureId, entretien);
             }
+            const prix = await this.getMontantFacture(factureId);
+            await this.setPrixFacture(factureId, prix);
         }
     } catch (error) {
         console.error("Erreur lors de la vérification de la facture :", error.message);
@@ -123,12 +125,11 @@ exports.searchFactures = async ({
     let factures = await Facture.find(query)
         .sort({ [defaultSortedColumn]: sortOrder })
         .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize)
-        .lean();
+        .limit(pageSize);
 
-    for (let facture of factures) {
-        facture.montantTotal = await this.getMontantFacture(facture._id);
-    }
+    // for (let facture of factures) {
+    //     facture.montantTotal = await this.getMontantFacture(facture._id);
+    // }
 
     return { totalItems, items: factures };
 };
@@ -155,7 +156,6 @@ exports.getMontantFacture = async (factureId) => {
 
         const prixResults = await Promise.all(prixPromises);
         prixTotal = prixResults.reduce((sum, value) => sum + value, 0);
-
         return prixTotal;
     } catch (error) {
         console.error('Erreur lors du calcul du montant total de la facture :', error.message);
@@ -201,6 +201,67 @@ exports.updateEtatPaiement = async (factureId, etatCode, etatLibelle) => {
         };
         await existingFacture.save();
         return existingFacture._id;
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.setPrixFacture = async (factureId, prix) => {
+    try {
+        const existingFacture = await Facture.findById(factureId);
+        if (!existingFacture) {
+            return res.status(404).json({ message: 'Facture non trouvé' });
+        }
+
+        existingFacture.prix = prix;
+        await existingFacture.save();
+        return existingFacture._id;
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.getEvoCA = async (type, detailType) => {
+
+    try {
+        let query = {};
+        let aggregation = [
+            { $match: {} },
+            { $group: { _id: null, years: { $addToSet: { $year: "$date" } } } }
+        ];
+        const yearsData = await Facture.aggregate(aggregation);
+        let years = yearsData.length ? yearsData[0].years : [];
+        years = years.sort((a, b) => b - a).slice(0, 5);
+
+        if (type === 'Annuel') {
+            if (year) {
+                query.date = { $gte: new Date(`${year}-01-01`), $lt: new Date(`${parseInt(year) + 1}-01-01`) };
+            }
+            aggregation.push({ $group: { _id: { year: { $year: "$date" } }, totalCA: { $sum: "$prix" } } });
+        }
+
+        if (type === 'Mensuel') {
+            if (year && month) {
+                query.date = { $gte: new Date(`${year}-${month}-01`), $lt: new Date(`${year}-${parseInt(month) + 1}-01`) };
+            }
+            aggregation.push({ $group: { _id: { year: { $year: "$date" }, month: { $month: "$date" } }, totalCA: { $sum: "$prix" } } });
+        }
+
+        if (type === 'Journalier') {
+            if (year && month && day) {
+                query.date = { $gte: new Date(`${year}-${month}-${day}T00:00:00`), $lt: new Date(`${year}-${month}-${parseInt(day) + 1}T00:00:00`) };
+            }
+            aggregation.push({ $group: { _id: { date: { $dayOfYear: "$date" } }, totalCA: { $sum: "$prix" } } });
+        }
+
+        aggregation[0].$match = query;
+
+        const result = await Facture.aggregate(aggregation);
+
+        return { result, years };
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

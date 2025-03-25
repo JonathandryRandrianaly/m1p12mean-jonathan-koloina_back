@@ -89,3 +89,15 @@ exports.getTotalPaiement= async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.getEvoCA= async (req, res) => {
+    const { type, detailType } = req.body;
+
+    try {
+        const stats = await factureService.getEvoCA(type, detailType);
+        return res.status(200).json(stats);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
