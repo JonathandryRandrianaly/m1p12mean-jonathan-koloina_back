@@ -19,3 +19,13 @@ exports.getNombreClient = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
+exports.getNombreTotalRdv = async (req, res) => {
+    try {
+        const result = await statistiqueService.getNombreTotalRdv();
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('Error', error);
+        res.status(500).send('Server error');
+    }
+};
