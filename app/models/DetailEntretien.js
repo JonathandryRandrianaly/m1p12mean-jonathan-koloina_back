@@ -29,9 +29,15 @@ const detailEntretienSchema = new mongoose.Schema({
             ref: 'Rapport'
         }
     ],
+    sortieStocks: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Stock'
+        }
+    ],
     etat: {
         type: {
-            code: { type: Number, required: true }, // -10:a faire, 0 en cours, 10: attente de validation, 20: valider
+            code: { type: Number, required: true }, // -20:annulé -10:a faire, 0 en cours, 10: attente de validation, 20: valider
             libelle: { type: String, required: true }
         },
         required: true

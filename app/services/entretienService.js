@@ -206,7 +206,18 @@ exports.getDetailEntretienById = async (detailEntretienId) => {
             path:'users',
             select:'nom'
         })
-        .populate('rapports');
+        .populate('rapports')
+        .populate({
+            path: 'sortieStocks',
+            populate: {
+                path:'consommable',
+                select:'nom',
+                populate:{
+                    path:'unite',
+                    select:'nom'
+                }
+            }
+        });
         return detailEntretien;
     } catch (error) {
         console.error('Error get Detail:', error);
@@ -546,5 +557,30 @@ exports.getSumEntretienPrice = async (detailEntretienId) => {
     } catch (error) {
         console.error('Erreur lors de la récupération des prix des entretiens:', error.message);
         throw new Error("Erreur lors de la récupération des prix des entretiens.");
+    }
+};
+
+exports.addSortieStockEntretien = async (detailEntretienId, stockId) => {
+    try {
+        await DetailEntretien.updateOne(
+            { _id: detailEntretienId },
+            { $push: { sortieStocks: stockId } }
+        );
+    } catch (error) {
+        console.error('Erreur lors de sortie stock entretien :', error.message);
+    }
+};
+
+exports.annulerRdv = async (detailEntretienId) => {
+    try {
+        const detailEntretien = await DetailEntretien.findById(detailEntretienId);
+        const entretienId= detailEntretien.entretien;
+        await DetailEntretien.findByIdAndDelete(detailEntretienId);
+        const countEntretien = await DetailEntretien.countDocuments({ entretien: entretienId });
+        if (countEntretien === 0) {
+            await Entretien.findByIdAndDelete(entretienId);
+        }
+    } catch (error) {
+        console.error('Erreur lors de annulation rdv :', error);
     }
 };
