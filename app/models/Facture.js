@@ -10,6 +10,10 @@ const factureSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    prix: {
+        type: Number,
+        required: false
+    },
     etat: {
         type: {
             code: { type: Number, required: true }, // 10: payé -10:non payé
