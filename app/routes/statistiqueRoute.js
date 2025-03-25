@@ -6,5 +6,6 @@ const statistiqueController = require('../controllers/statistiqueController');
 router.get('/statistique/nombre-personnel', authorizeRoles('manager'), statistiqueController.getNombrePersonnel);
 router.get('/statistique/nombre-client', authorizeRoles('manager'), statistiqueController.getNombreClient);
 router.get('/statistique/nombre-rdv', authorizeRoles('manager'), statistiqueController.getNombreTotalRdv);
+router.get('/statistique/nombre-moyen-rdv', authorizeRoles('manager'), statistiqueController.getNombreMoyenRdv);
 
 module.exports = router;

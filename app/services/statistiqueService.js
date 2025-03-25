@@ -30,3 +30,46 @@ exports.getNombreTotalRdv = async () => {
         throw new Error('Erreur lors de get nbr rdv');
     }
 };
+
+exports.getNombreMoyenRdv = async (type) => {
+    try {
+        let groupId = {
+            year: { $year: "$entretien.date" },
+            month: { $month: "$entretien.date" }
+        };
+
+        if (type === 'jour') {
+            groupId.day = { $dayOfMonth: "$entretien.date" };
+        }
+        const result = await DetailEntretien.aggregate([
+            {
+                $lookup: {
+                    from: "entretiens", 
+                    localField: "entretien", 
+                    foreignField: "_id", 
+                    as: "entretien"
+                }
+            },
+            {
+                $unwind: "$entretien"
+            },
+            {
+                $group: {
+                    _id: groupId,
+                    totalRdv: { $sum: 1 }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    moyenneRdv: { $avg: "$totalRdv" }
+                }
+            }
+        ]);
+        return result.length > 0 ? result[0].moyenneRdv : 0;
+    } catch (error) {
+        console.error('Erreur lors du calcul de la moyenne des RDV :', error);
+        throw new Error('Erreur lors du calcul de la moyenne des RDV');
+    }
+};
+
