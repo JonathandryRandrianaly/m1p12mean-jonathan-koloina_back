@@ -90,8 +90,34 @@ exports.getTotalPaiement= async (req, res) => {
     }
 };
 
+
+exports.getDistinctYear= async (req, res) => {
+
+    try {
+        const years = await Facture.aggregate([
+            {
+                $project: {
+                    year: { $year: "$date" }
+                }
+            },
+            {
+                $group: {
+                    _id: "$year"
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+        return res.status(200).json(years.map(y => y._id));
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
 exports.getEvoCA= async (req, res) => {
-    const { type, detailType } = req.body;
+    const { type, detailType } = req.query;
 
     try {
         const stats = await factureService.getEvoCA(type, detailType);

@@ -224,46 +224,48 @@ exports.setPrixFacture = async (factureId, prix) => {
 };
 
 exports.getEvoCA = async (type, detailType) => {
-
     try {
-        let query = {};
-        let aggregation = [
-            { $match: {} },
-            { $group: { _id: null, years: { $addToSet: { $year: "$date" } } } }
+        let matchCondition = {};
+        let groupByField = null;
+        type = Number(type);
+        detailType = Number(detailType);
+        if (type === 0) {
+            groupByField = { year: { $year: "$date" } };
+            console.log(groupByField);
+        }
+        if (type === 1 && detailType) {
+            matchCondition = {
+                date: {
+                    $gte: new Date(`${detailType}-01-01T00:00:00.000Z`),
+                    $lt: new Date(`${detailType + 1}-01-01T00:00:00.000Z`)
+                }
+            };
+            groupByField = { month: { $month: "$date" }, year: { $year: "$date" } };
+        }
+
+        if (!groupByField) {
+            throw new Error("Type invalide");
+        }
+
+        const aggregationPipeline = [
+            { $match: matchCondition },
+            {
+                $group: {
+                    _id: groupByField,
+                    total: { $sum: "$prix" }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
         ];
-        const yearsData = await Facture.aggregate(aggregation);
-        let years = yearsData.length ? yearsData[0].years : [];
-        years = years.sort((a, b) => b - a).slice(0, 5);
 
-        if (type === 'Annuel') {
-            if (year) {
-                query.date = { $gte: new Date(`${year}-01-01`), $lt: new Date(`${parseInt(year) + 1}-01-01`) };
-            }
-            aggregation.push({ $group: { _id: { year: { $year: "$date" } }, totalCA: { $sum: "$prix" } } });
-        }
+        const results = await Facture.aggregate(aggregationPipeline);
 
-        if (type === 'Mensuel') {
-            if (year && month) {
-                query.date = { $gte: new Date(`${year}-${month}-01`), $lt: new Date(`${year}-${parseInt(month) + 1}-01`) };
-            }
-            aggregation.push({ $group: { _id: { year: { $year: "$date" }, month: { $month: "$date" } }, totalCA: { $sum: "$prix" } } });
-        }
-
-        if (type === 'Journalier') {
-            if (year && month && day) {
-                query.date = { $gte: new Date(`${year}-${month}-${day}T00:00:00`), $lt: new Date(`${year}-${month}-${parseInt(day) + 1}T00:00:00`) };
-            }
-            aggregation.push({ $group: { _id: { date: { $dayOfYear: "$date" } }, totalCA: { $sum: "$prix" } } });
-        }
-
-        aggregation[0].$match = query;
-
-        const result = await Facture.aggregate(aggregation);
-
-        return { result, years };
-
+        return results.map(item => ({
+            periode: type === 0 ? item._id.year : item._id.month,
+            chiffreAffaires: item.total
+        }));
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Erreur du serveur' });
+        return { message: 'Erreur du serveur' };
     }
 };

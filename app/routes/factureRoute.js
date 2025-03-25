@@ -8,6 +8,7 @@ router.get('/factures/details/:factureId', authorizeRoles('client','mecanicien',
 router.get('/factures/:factureId', authorizeRoles('client','mecanicien','manager'), factureController.getFullFacture);
 router.get('/facture/paiement-total/:factureId', authorizeRoles('client','manager'), factureController.getTotalPaiement);
 router.get('/statistique/finance/evo-ca', authorizeRoles('manager'), factureController.getEvoCA);
+router.get('/facture/distinct-year', authorizeRoles('manager'), factureController.getDistinctYear);
 
 router.post('/facture-check/:entretienId', authorizeRoles('manager'), factureController.checkFacture);
 router.post('/facture/assign', authorizeRoles('manager'), factureController.assignEntretienToFacture);
