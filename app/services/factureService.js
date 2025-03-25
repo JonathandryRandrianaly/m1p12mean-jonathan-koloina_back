@@ -231,7 +231,6 @@ exports.getEvoCA = async (type, detailType) => {
         detailType = Number(detailType);
         if (type === 0) {
             groupByField = { year: { $year: "$date" } };
-            console.log(groupByField);
         }
         if (type === 1 && detailType) {
             matchCondition = {
@@ -267,5 +266,40 @@ exports.getEvoCA = async (type, detailType) => {
     } catch (error) {
         console.error(error);
         return { message: 'Erreur du serveur' };
+    }
+};
+
+exports.getFactureImpayee = async () => {
+    try {
+        const result = await Facture.aggregate([
+            { $match: { 'etat.code': -10 } },
+            { $group: { _id: null, total: { $sum: '$prix' } } }
+        ]);
+        return result.length > 0 ? result[0].total : 0;
+    } catch (error) {
+        throw new Error('Erreur lors de la récupération des factures impayées');
+    }
+};
+
+exports.getFacturePayee = async () => {
+    try {
+        const result = await Facture.aggregate([
+            { $match: { 'etat.code': 10 } },
+            { $group: { _id: null, total: { $sum: '$prix' } } }
+        ]);
+        return result.length > 0 ? result[0].total : 0;
+    } catch (error) {
+        throw new Error('Erreur lors de la récupération des factures payées');
+    }
+};
+
+exports.getFactureTotal = async () => {
+    try {
+        const result = await Facture.aggregate([
+            { $group: { _id: null, total: { $sum: '$prix' } } }
+        ]);
+        return result.length > 0 ? result[0].total : 0;
+    } catch (error) {
+        throw new Error('Erreur lors de la récupération des factures');
     }
 };

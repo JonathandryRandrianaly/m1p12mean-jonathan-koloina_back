@@ -127,3 +127,31 @@ exports.getEvoCA= async (req, res) => {
         return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
+
+exports.getFactureImpayee= async (req, res) => {
+    try {
+        const facture = await factureService.getFactureImpayee();
+        return res.status(200).json(facture);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+exports.getFacturePayee= async (req, res) => {
+    try {
+        const facture = await factureService.getFacturePayee();
+        return res.status(200).json(facture);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+exports.getFactureTotal= async (req, res) => {
+    try {
+        const facture = await factureService.getFactureTotal();
+        return res.status(200).json(facture);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
