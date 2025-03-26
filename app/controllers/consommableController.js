@@ -2,7 +2,7 @@ const Consommable = require('../models/Consommable');
 const searchService = require('../services/searchService');
 
 exports.createConsommable= async (req, res) => {
-    const { nom, unite } = req.body;
+    const { nom, unite, prix } = req.body;
 
     try {
         const existingConsommable = await Consommable.findOne({ nom, 'etat.code': 10 }); 
@@ -13,6 +13,7 @@ exports.createConsommable= async (req, res) => {
         const newConsommable = new Consommable({
             nom,
             unite,
+            prix,
             etat: { code: 10, libelle: 'Actif' } 
         });
 
@@ -86,5 +87,40 @@ exports.searchConsommables = async (req, res) => {
     } catch (error) {
         console.error('Error during user search:', error);
         res.status(500).send('Server error');
+    }
+};
+
+exports.updatePrixConsommable = async (req, res) => {
+    const { consommableId, prix } = req.body;
+
+    try {
+        const consommable = await Consommable.findById(consommableId);
+        if (!consommable) {
+            return res.status(404).json({ message: 'Consommable non trouvée.' });
+        }
+
+        consommable.prix= prix;
+        await consommable.save();
+
+        return res.status(200).json({ message: 'État de consommable mise à jour avec succès'});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.getConsommableById = async (req, res) => {
+    const { consommableId } = req.params;
+
+    try {
+        const consommable = await Consommable.findById(consommableId);
+        /*if (!consommable) {
+            return res.status(200).json({success: false, message: 'Consommable non trouvée.' });
+        }*/
+
+        return res.status(200).json( consommable);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };

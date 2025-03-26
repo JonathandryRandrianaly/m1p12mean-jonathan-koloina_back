@@ -9,6 +9,11 @@ const consommableSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Unite'
     },
+    prix: {
+        type: Number,
+        required: true,
+        min: 0,
+    },
     etat: { 
         type: {
             code: { type: Number, required: true }, // 10: actif -10:inactif
