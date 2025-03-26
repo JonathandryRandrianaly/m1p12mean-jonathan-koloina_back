@@ -75,8 +75,6 @@ exports.getNombreMoyenRdv = async (type) => {
 
 exports.getInterventionsParCategories = async ({mois,annee}) => {
     try {
-        console.log('mois '+mois);
-        console.log('annee '+annee);
         const total = await DetailEntretien.countDocuments();
         if (total === 0) {
             return []; 
@@ -84,7 +82,11 @@ exports.getInterventionsParCategories = async ({mois,annee}) => {
 
         const matchStage = {};
         if (annee) matchStage.year = { $eq: Number(annee) };
-        if (mois) matchStage.month = { $eq: Number(mois) };
+        if (mois){
+            const value= mois.split('-');
+            matchStage.year = { $eq: Number(value[0]) };
+            matchStage.month = { $eq: Number(value[1]) };
+        } 
 
         const result = await DetailEntretien.aggregate([
             {
@@ -152,7 +154,83 @@ exports.getInterventionsParCategories = async ({mois,annee}) => {
 };
 
 
+exports.getNombreInterventionsParEmployes = async ({ mois, annee }) => {
+    try {
+        const matchStage = {};
+        if (annee) matchStage.year = { $eq: Number(annee) };
+        if (mois){
+            const value= mois.split('-');
+            matchStage.year = { $eq: Number(value[0]) };
+            matchStage.month = { $eq: Number(value[1]) };
+        } 
 
+        const result = await User.aggregate([
+            {
+                $lookup: {
+                    from: "roles",
+                    localField: "roles",
+                    foreignField: "_id",
+                    as: "rolesData"
+                }
+            },
+            {
+                $match: { "rolesData.libelle": "mecanicien" }
+            },
+            {
+                $lookup: {
+                    from: "detailentretiens",
+                    localField: "_id",
+                    foreignField: "users",
+                    as: "details"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$details",
+                    preserveNullAndEmptyArrays: true 
+                }
+            },
+            {
+                $lookup: {
+                    from: "entretiens",
+                    localField: "details.entretien",
+                    foreignField: "_id",
+                    as: "entretien"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$entretien",
+                    preserveNullAndEmptyArrays: true 
+                }
+            },
+            {
+                $addFields: {
+                    year: { $year: "$entretien.date" },
+                    month: { $month: "$entretien.date" }
+                }
+            },
+            {
+                $match: matchStage
+            },
+            {
+                $group: {
+                    _id: "$nom",
+                    count: { $sum: { $cond: [{ $ifNull: ["$details", false] }, 1, 0] } }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    count: 1,
+                }
+            }
+        ]);
 
-
+        return result;
+    } catch (error) {
+        console.error("Erreur lors de interventions by employes", error);
+        throw new Error("Erreur lors de interventions by employes");
+    }
+};
 

@@ -8,5 +8,6 @@ router.get('/statistique/nombre-client', authorizeRoles('manager'), statistiqueC
 router.get('/statistique/nombre-rdv', authorizeRoles('manager'), statistiqueController.getNombreTotalRdv);
 router.get('/statistique/nombre-moyen-rdv', authorizeRoles('manager'), statistiqueController.getNombreMoyenRdv);
 router.get('/statistique/taux-interventions', authorizeRoles('manager'), statistiqueController.getInterventionsParCategories);
+router.get('/statistique/interventions-employes', authorizeRoles('manager'), statistiqueController.getNombreInterventionsParEmployes);
 
 module.exports = router;

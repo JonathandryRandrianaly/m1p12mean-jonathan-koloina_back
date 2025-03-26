@@ -51,3 +51,14 @@ exports.getInterventionsParCategories = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
+exports.getNombreInterventionsParEmployes = async (req, res) => {
+    try {
+        const periode =req.query
+        const result = await statistiqueService.getNombreInterventionsParEmployes(periode);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('Error', error);
+        res.status(500).send('Server error');
+    }
+};
