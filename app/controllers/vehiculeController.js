@@ -56,12 +56,7 @@ exports.getAllVehiculeByProprio = async (req, res) => {
             { path: 'modele', populate: { path: 'categorie' } }
         ])        
         .populate('proprietaire');
-    
-        if (vehicules.length > 0) {
-            return res.status(200).json(vehicules);
-        } else {
-            return res.status(404).json({ message: 'Aucun type trouvé.' });
-        }
+        return res.status(200).json(vehicules);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -71,11 +66,7 @@ exports.getAllVehiculeByProprio = async (req, res) => {
 exports.getAllVehicule = async (req, res) => {
     try {
         const vehicules = await Vehicule.find().populate('modele').populate('proprietaire');
-        if (vehicules.length > 0) {
-            return res.status(200).json(vehicules);
-        } else {
-            return res.status(404).json({ message: 'Aucun type trouvé.' });
-        }
+        return res.status(200).json(vehicules);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

@@ -55,11 +55,7 @@ exports.updateEtatCategorieEntretien = async (req, res) => {
 exports.getAllCategorieEntretien = async (req, res) => {
     try {
         const categories = await CategorieEntretien.find();
-        if (categories.length > 0) {
-            return res.status(200).json(categories);
-        } else {
-            return res.status(404).json({ message: 'Aucune categorie trouvée.' });
-        }
+        return res.status(200).json(categories);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -70,11 +66,7 @@ exports.getAllCategorieEntretienByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const categorieEntretiens = await CategorieEntretien.find({'etat.code': statut});
-        if (categorieEntretiens.length > 0) {
-            return res.status(200).json(categorieEntretiens);
-        } else {
-            return res.status(404).json({ message: 'Aucune categorie trouvée.' });
-        }
+        return res.status(200).json(categorieEntretiens);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -87,7 +79,6 @@ exports.getAllCategorieEntretienByStatutWithMinPrice = async (req, res) => {
     try {
         const categorieEntretiens = await CategorieEntretien.find({'etat.code': statut}).lean();
 
-        if (categorieEntretiens.length > 0) {
             for (let categorie of categorieEntretiens) {
                 const filter = { categorieEntretien: categorie._id };
 
@@ -103,9 +94,6 @@ exports.getAllCategorieEntretienByStatutWithMinPrice = async (req, res) => {
                 categorie.prixMinimum = prixMin.length > 0 ? prixMin[0].prix : 0;
             }
             return res.status(200).json(categorieEntretiens);
-        } else {
-            return res.status(404).json({ message: 'Aucune catégorie trouvée.' });
-        }
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

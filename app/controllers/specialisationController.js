@@ -51,11 +51,7 @@ exports.updateEtatSpecialisation = async (req, res) => {
 exports.getAllSpecialisation = async (req, res) => {
     try {
         const specialisations = await Specialisation.find();
-        if (specialisations.length > 0) {
-            return res.status(200).json(specialisations);
-        } else {
-            return res.status(404).json({ message: 'Aucune specialisation trouvée.' });
-        }
+        return res.status(200).json(specialisations);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -66,11 +62,7 @@ exports.getAllSpecialisationByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const specialisations = await Specialisation.find({'etat.code': statut});
-        if (specialisations.length > 0) {
-            return res.status(200).json(specialisations);
-        } else {
-            return res.status(404).json({ message: 'Aucune specialisation trouvée.' });
-        }
+        return res.status(200).json(specialisations);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
