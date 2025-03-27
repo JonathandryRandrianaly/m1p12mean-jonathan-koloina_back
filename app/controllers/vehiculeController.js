@@ -83,3 +83,23 @@ exports.searchVehicules = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
+exports.getDetailsVehicule = async (req, res) => {
+    try {
+        const { vehiculeId } = req.params;
+        const vehicule = await Vehicule.findById(vehiculeId)
+        .populate({
+            path: 'modele', select: 'nom anneeFabrication', populate: [
+                { path: 'marque', select: 'nom' },
+                { path: 'energieMoteur', select: 'nom' },
+                { path: 'transmission', select: 'nom' },
+                { path: 'motricite', select: 'nom' },
+                { path: 'categorie', select: 'nom' }
+            ]
+        });
+        return res.status(200).json(vehicule);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
