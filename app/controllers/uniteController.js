@@ -51,11 +51,7 @@ exports.updateEtatUnite = async (req, res) => {
 exports.getAllUnite = async (req, res) => {
     try {
         const unites = await Unite.find();
-        if (unites.length > 0) {
-            return res.status(200).json(unites);
-        } else {
-            return res.status(404).json({ message: 'Aucune unité trouvée.' });
-        }
+        return res.status(200).json(unites);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

@@ -51,11 +51,7 @@ exports.updateEtatMotricite = async (req, res) => {
 exports.getAllMotricite = async (req, res) => {
     try {
         const motricites = await Motricite.find();
-        if (motricites.length > 0) {
-            return res.status(200).json(motricites);
-        } else {
-            return res.status(404).json({ message: 'Aucune motricite trouvée.' });
-        }
+        return res.status(200).json(motricites);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -66,11 +62,7 @@ exports.getAllMotriciteByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const motricites = await Motricite.find({'etat.code': statut});
-        if (motricites.length > 0) {
-            return res.status(200).json(motricites);
-        } else {
-            return res.status(404).json({ message: 'Aucune motricite trouvée.' });
-        }
+        return res.status(200).json(motricites);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

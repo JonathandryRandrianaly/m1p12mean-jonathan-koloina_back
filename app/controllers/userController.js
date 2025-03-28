@@ -4,11 +4,7 @@ const userService = require('../services/userService');
 exports.getAllUser = async (req, res) => {
     try {
         const users = await User.find().populate('roles');
-        if (users.length > 0) {
-            return res.status(200).json(users);
-        } else {
-            return res.status(404).json({ message: 'Aucun utilisateur trouvé.' });
-        }
+        return res.status(200).json(users);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -19,11 +15,7 @@ exports.getAllUserByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const users = await User.find({'etat.code': statut}).populate('roles');
-        if (users.length > 0) {
-            return res.status(200).json(users);
-        } else {
-            return res.status(404).json({ message: 'Aucun utilisateur trouvé.' });
-        }
+        return res.status(200).json(users);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -34,11 +26,7 @@ exports.getAllUserByRole = async (req, res) => {
     const { roleId } = req.params;
     try {
         const users = await User.find({ roles: roleId }).populate('roles');
-        if (users.length > 0) {
-            return res.status(200).json(users);
-        } else {
-            return res.status(404).json({ message: 'Aucun utilisateur trouvé.' });
-        }
+        return res.status(200).json(users);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -95,6 +83,17 @@ exports.searchUsers = async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error during user search:', error);
+        res.status(500).send('Server error');
+    }
+};
+
+exports.getUserById = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await User.findById(userId);
+        res.json(result);
+    } catch (error) {
+        console.error('Error during getUserById:', error);
         res.status(500).send('Server error');
     }
 };

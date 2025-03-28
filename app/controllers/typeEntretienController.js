@@ -61,11 +61,7 @@ exports.updateEtatTypeEntretien = async (req, res) => {
 exports.getAllTypeEntretien = async (req, res) => {
     try {
         const typeEntretiens = await TypeEntretien.find().populate('categorieEntretien').populate('categorieModele').populate('specialisations');
-        if (typeEntretiens.length > 0) {
-            return res.status(200).json(typeEntretiens);
-        } else {
-            return res.status(404).json({ message: 'Aucun type trouvé.' });
-        }
+        return res.status(200).json(typeEntretiens);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -76,11 +72,7 @@ exports.getAllTypeEntretienByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const typeEntretiens = await TypeEntretien.find({'etat.code': statut}).populate('categorieEntretien').populate('categorieModele').populate('specialisations');
-        if (typeEntretiens.length > 0) {
-            return res.status(200).json(typeEntretiens);
-        } else {
-            return res.status(404).json({ message: 'Aucun type entretien trouvé.' });
-        }
+        return res.status(200).json(typeEntretiens);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

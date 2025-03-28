@@ -46,11 +46,7 @@ exports.getAllSpecialisationByUser = async (req, res) => {
     const { userId } = req.params;
     try {
         const spes = await SpecialisationPersonnel.find({user: userId}).populate('specialisation');
-        if (spes.length > 0) {
-            return res.status(200).json(spes);
-        } else {
-            return res.status(404).json({ message: 'Aucun type trouvé.' });
-        }
+        return res.status(200).json(spes);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
