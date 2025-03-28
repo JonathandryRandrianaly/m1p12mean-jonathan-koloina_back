@@ -86,3 +86,14 @@ exports.searchUsers = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
+exports.getUserById = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await User.findById(userId);
+        res.json(result);
+    } catch (error) {
+        console.error('Error during getUserById:', error);
+        res.status(500).send('Server error');
+    }
+};
