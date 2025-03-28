@@ -53,11 +53,7 @@ exports.updateEtatConsommable = async (req, res) => {
 exports.getAllConsommable = async (req, res) => {
     try {
         const consommables = await Consommable.find().populate('unite');
-        if (consommables.length > 0) {
-            return res.status(200).json(consommables);
-        } else {
-            return res.status(404).json({ message: 'Aucun consommable trouvé.' });
-        }
+        return res.status(200).json(consommables);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -68,11 +64,7 @@ exports.getAllConsommableByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const consommables = await Consommable.find({'etat.code': statut}).populate('unite');
-        if (consommables.length > 0) {
             return res.status(200).json(consommables);
-        } else {
-            return res.status(404).json({ message: 'Aucun consommable trouvé.' });
-        }
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

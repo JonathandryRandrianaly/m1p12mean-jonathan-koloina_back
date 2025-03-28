@@ -56,12 +56,7 @@ exports.getAllVehiculeByProprio = async (req, res) => {
             { path: 'modele', populate: { path: 'categorie' } }
         ])        
         .populate('proprietaire');
-    
-        if (vehicules.length > 0) {
-            return res.status(200).json(vehicules);
-        } else {
-            return res.status(404).json({ message: 'Aucun type trouvé.' });
-        }
+        return res.status(200).json(vehicules);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -71,11 +66,7 @@ exports.getAllVehiculeByProprio = async (req, res) => {
 exports.getAllVehicule = async (req, res) => {
     try {
         const vehicules = await Vehicule.find().populate('modele').populate('proprietaire');
-        if (vehicules.length > 0) {
-            return res.status(200).json(vehicules);
-        } else {
-            return res.status(404).json({ message: 'Aucun type trouvé.' });
-        }
+        return res.status(200).json(vehicules);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -90,5 +81,25 @@ exports.searchVehicules = async (req, res) => {
     } catch (error) {
         console.error('Error during user search:', error);
         res.status(500).send('Server error');
+    }
+};
+
+exports.getDetailsVehicule = async (req, res) => {
+    try {
+        const { vehiculeId } = req.params;
+        const vehicule = await Vehicule.findById(vehiculeId)
+        .populate({
+            path: 'modele', select: 'nom anneeFabrication', populate: [
+                { path: 'marque', select: 'nom' },
+                { path: 'energieMoteur', select: 'nom' },
+                { path: 'transmission', select: 'nom' },
+                { path: 'motricite', select: 'nom' },
+                { path: 'categorie', select: 'nom' }
+            ]
+        });
+        return res.status(200).json(vehicule);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Erreur du serveur' });
     }
 };

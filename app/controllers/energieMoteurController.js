@@ -51,11 +51,7 @@ exports.updateEtatEnergieMoteur = async (req, res) => {
 exports.getAllEnergieMoteur = async (req, res) => {
     try {
         const energieMoteurs = await EnergieMoteur.find();
-        if (energieMoteurs.length > 0) {
-            return res.status(200).json(energieMoteurs);
-        } else {
-            return res.status(404).json({ message: 'Aucune energie moteur trouvée.' });
-        }
+        return res.status(200).json(energieMoteurs);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -66,11 +62,7 @@ exports.getAllEnergieMoteurByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const energieMoteurs = await EnergieMoteur.find({'etat.code': statut});
-        if (energieMoteurs.length > 0) {
-            return res.status(200).json(energieMoteurs);
-        } else {
-            return res.status(404).json({ message: 'Aucune energie moteur trouvée.' });
-        }
+        return res.status(200).json(energieMoteurs);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

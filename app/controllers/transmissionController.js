@@ -51,11 +51,7 @@ exports.updateEtatTransmission = async (req, res) => {
 exports.getAllTransmission = async (req, res) => {
     try {
         const transmissions = await Transmission.find();
-        if (transmissions.length > 0) {
-            return res.status(200).json(transmissions);
-        } else {
-            return res.status(404).json({ message: 'Aucune transmission trouvée.' });
-        }
+        return res.status(200).json(transmissions);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -66,11 +62,7 @@ exports.getAllTransmissionByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const transmissions = await Transmission.find({'etat.code': statut});
-        if (transmissions.length > 0) {
-            return res.status(200).json(transmissions);
-        } else {
-            return res.status(404).json({ message: 'Aucune transmission trouvée.' });
-        }
+        return res.status(200).json(transmissions);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

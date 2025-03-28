@@ -51,11 +51,7 @@ exports.updateEtatCategorieModele = async (req, res) => {
 exports.getAllCategorieModele = async (req, res) => {
     try {
         const categories = await CategorieModele.find();
-        if (categories.length > 0) {
-            return res.status(200).json(categories);
-        } else {
-            return res.status(404).json({ message: 'Aucune categorie trouvée.' });
-        }
+        return res.status(200).json(categories);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -66,11 +62,7 @@ exports.getAllCategorieModeleByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const categorieModeles = await CategorieModele.find({'etat.code': statut});
-        if (categorieModeles.length > 0) {
-            return res.status(200).json(categorieModeles);
-        } else {
-            return res.status(404).json({ message: 'Aucune categorie trouvée.' });
-        }
+        return res.status(200).json(categorieModeles);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });

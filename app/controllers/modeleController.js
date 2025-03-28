@@ -33,11 +33,7 @@ exports.createModele = async (req, res) => {
 exports.getAllModele = async (req, res) => {
     try {
         const modeles = await Modele.find().populate('marque').populate('energieMoteur').populate('transmission').populate('motricite').populate('categorie');
-        if (modeles.length > 0) {
-            return res.status(200).json(modeles);
-        } else {
-            return res.status(404).json({ message: 'Aucun modèle trouvé.' });
-        }
+        return res.status(200).json(modeles);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
@@ -72,11 +68,7 @@ exports.getAllModeleByStatut = async (req, res) => {
     const { statut } = req.params;
     try {
         const modeles = await Modele.find({'etat.code': statut}).populate('marque').populate('energieMoteur').populate('transmission').populate('motricite').populate('categorie');
-        if (modeles.length > 0) {
-            return res.status(200).json(modeles);
-        } else {
-            return res.status(404).json({ message: 'Aucun modele trouvé.' });
-        }
+        return res.status(200).json(modeles);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Erreur du serveur' });
