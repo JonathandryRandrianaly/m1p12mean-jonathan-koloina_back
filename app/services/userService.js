@@ -1,40 +1,56 @@
 const User = require('../models/User');
 const mongoose = require('mongoose');
 
-exports.searchUsers = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', roles = [],etats = [], nom = '' }) => {
+exports.searchUsers = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', roles = [], etats = [], nom = '' }) => {
     const defaultSortedColumn = sortedColumn || 'nom';
     const pageNumber = parseInt(page);
     const pageSize = parseInt(limit);
     const sortOrder = sortDirection === 'desc' ? -1 : 1;
 
-    let query = {};
+    let matchQuery = {};
     if (nom) {
-        query.nom = { $regex: nom, $options: 'i' };
+        matchQuery.nom = { $regex: nom, $options: 'i' };
     }
     if (roles.length > 0) {
-        query.roles = { $in: roles.map(roleId => new mongoose.Types.ObjectId(roleId)) };
+        matchQuery.roles = { $in: roles.map(roleId => new mongoose.Types.ObjectId(roleId)) };
     }
     if (etats.length > 0) {
-        query['etat.code'] = { $in: etats };
+        matchQuery['etat.code'] = { $in: etats };
     }
 
-    const totalItems = await User.countDocuments(query);
-    let users = await User.find(query)
-        .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize)
-        .populate('roles');
+    const aggregationPipeline = [
+        { $match: matchQuery },
 
-    users = users.sort((a, b) => {
-        if (defaultSortedColumn === 'roles') {
-            const roleA = a.roles.map(role => role.libelle).join(', ').toLowerCase();
-            const roleB = b.roles.map(role => role.libelle).join(', ').toLowerCase();
-            return roleA.localeCompare(roleB) * sortOrder;
-        } else {
-            const aValue = a[defaultSortedColumn] || '';
-            const bValue = b[defaultSortedColumn] || '';
-            return aValue.localeCompare(bValue) * sortOrder;
-        }
-    });
+        { 
+            $lookup: {
+                from: "roles", 
+                localField: "roles",
+                foreignField: "_id",
+                as: "roles"
+            }
+        },
+
+        { 
+            $addFields: {
+                roleLibelle: { $ifNull: [{ $arrayElemAt: ["$roles.libelle", 0] }, ""] }
+            }
+        },
+
+        { $sort: { [defaultSortedColumn === 'roles' ? 'roleLibelle' : defaultSortedColumn]: sortOrder } },
+
+        { $facet: {
+            totalItems: [{ $count: "count" }],
+            items: [
+                { $skip: (pageNumber - 1) * pageSize },
+                { $limit: pageSize }
+            ]
+        }}
+    ];
+
+    const result = await User.aggregate(aggregationPipeline);
+    
+    const totalItems = result[0].totalItems.length > 0 ? result[0].totalItems[0].count : 0;
+    const users = result[0].items;
 
     return { totalItems, items: users };
 };

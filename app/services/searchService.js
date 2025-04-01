@@ -20,20 +20,15 @@ exports.searchModels = async ({ page = 1, limit = 10, sortedColumn = '', sortDir
     }
     const totalItems = await model.countDocuments(query);
     let models = await model.find(query)
+        .sort({ [defaultSortedColumn]: sortOrder })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
-
-        models = models.sort((a, b) => {
-        const aValue = a[defaultSortedColumn] || '';
-        const bValue = b[defaultSortedColumn] || '';
-        return aValue.localeCompare(bValue) * sortOrder;
-    });
 
     return { totalItems, items: models };
 };
 
 exports.searchRoles = async ({ page = 1, limit = 10, sortedColumn = '', sortDirection = 'asc', nom = '',etats = []}, model) => {
-    const defaultSortedColumn = sortedColumn || 'nom';
+    const defaultSortedColumn = sortedColumn || 'libelle';
     const pageNumber = parseInt(page);
     const pageSize = parseInt(limit);
     const sortOrder = sortDirection === 'desc' ? -1 : 1;
@@ -48,14 +43,9 @@ exports.searchRoles = async ({ page = 1, limit = 10, sortedColumn = '', sortDire
     }
     const totalItems = await model.countDocuments(query);
     let models = await model.find(query)
+        .sort({ [defaultSortedColumn]: sortOrder })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
-
-        models = models.sort((a, b) => {
-        const aValue = a[defaultSortedColumn] || '';
-        const bValue = b[defaultSortedColumn] || '';
-        return aValue.localeCompare(bValue) * sortOrder;
-    });
 
     return { totalItems, items: models };
 };
@@ -79,29 +69,31 @@ exports.searchConsommables = async ({ page = 1, limit = 10, sortedColumn = '', s
         query.unite = { $in: unites.map(uniteId => new mongoose.Types.ObjectId(uniteId)) };
     }
     const totalItems = await Consommable.countDocuments(query);
-    let consommables = await Consommable.find(query)
-        .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize)
-        .populate('unite');
-
-        consommables = consommables.sort((a, b) => {
-            if (defaultSortedColumn === 'unite') {
-                const uniteA = a.unite?.nom.toLowerCase();
-                const uniteB = b.unite?.nom.toLowerCase();
-                return uniteA.localeCompare(uniteB) * sortOrder;
-            }
-            else if (defaultSortedColumn === 'prix') { 
-                const aValue = parseFloat(a[defaultSortedColumn]) || 0;
-                const bValue = parseFloat(b[defaultSortedColumn]) || 0;
-                return (aValue - bValue) * sortOrder;
-            } 
-            else {
-                const aValue = a[defaultSortedColumn] || '';
-                const bValue = b[defaultSortedColumn] || '';
-                return aValue.localeCompare(bValue) * sortOrder;
-            }
-
-    });
+    let consommables;
+    
+    if (defaultSortedColumn === 'unite') {
+        consommables = await Consommable.aggregate([
+            { $match: query },
+            { 
+                $lookup: { 
+                    from: "unites", 
+                    localField: "unite", 
+                    foreignField: "_id", 
+                    as: "unite"
+                } 
+            },
+            { $unwind: { path: "$unite", preserveNullAndEmptyArrays: true } },
+            { $sort: { "unite.nom": sortOrder } }, 
+            { $skip: (pageNumber - 1) * pageSize },
+            { $limit: pageSize }
+        ]);
+    } else {
+        consommables = await Consommable.find(query)
+            .populate('unite') 
+            .sort({ [defaultSortedColumn]: sortOrder })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize);
+    }
 
     return { totalItems, items: consommables };
 };
@@ -148,33 +140,36 @@ exports.searchModeles = async ({ page = 1, limit = 10, sortedColumn = '', sortDi
     }
     
     const totalItems = await Modele.countDocuments(query);
-    let modeles = await Modele.find(query)
-        .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize)
-        .populate('marque')
-        .populate('energieMoteur')
-        .populate('transmission')
-        .populate('motricite')
-        .populate('categorie');
-
-        const getValue = (obj, path) => {
-            return path.split('.').reduce((o, key) => o?.[key] || '', obj);
-        };
+    let modeles;
     
-
-        modeles = modeles.sort((a, b) => {
-            if (defaultSortedColumn === 'nom') {
-                const aValue = a[defaultSortedColumn] || '';
-                const bValue = b[defaultSortedColumn] || '';
-                return aValue.localeCompare(bValue) * sortOrder;
-            }
-             else {
-                const aValue = getValue(a, defaultSortedColumn).toString().toLowerCase();
-                const bValue = getValue(b, defaultSortedColumn).toString().toLowerCase();
-                return aValue.localeCompare(bValue) * sortOrder;
-            }
-
-    });
+    if (['marque.nom', 'energieMoteur.nom', 'transmission.nom', 'motricite.nom', 'categorie.nom'].includes(defaultSortedColumn)) {
+        modeles = await Modele.aggregate([
+            { $match: query },
+            { $lookup: { from: "marques", localField: "marque", foreignField: "_id", as: "marque" } },
+            { $lookup: { from: "energies", localField: "energieMoteur", foreignField: "_id", as: "energieMoteur" } },
+            { $lookup: { from: "transmissions", localField: "transmission", foreignField: "_id", as: "transmission" } },
+            { $lookup: { from: "motricites", localField: "motricite", foreignField: "_id", as: "motricite" } },
+            { $lookup: { from: "categories", localField: "categorie", foreignField: "_id", as: "categorie" } },
+            { $unwind: { path: "$marque", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$energieMoteur", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$transmission", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$motricite", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$categorie", preserveNullAndEmptyArrays: true } },
+            { $sort: { [defaultSortedColumn]: sortOrder } }, 
+            { $skip: (pageNumber - 1) * pageSize },
+            { $limit: pageSize }
+        ]);
+    } else {
+        modeles = await Modele.find(query)
+            .populate('marque')
+            .populate('energieMoteur')
+            .populate('transmission')
+            .populate('motricite')
+            .populate('categorie')
+            .sort({ [defaultSortedColumn]: sortOrder }) 
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize);
+    }
 
     return { totalItems, items: modeles };
 };
@@ -213,40 +208,31 @@ exports.searchTypesEntretien = async ({ page = 1, limit = 10, sortedColumn = '',
     }
 
     const totalItems = await TypeEntretien.countDocuments(query);
-    let types = await TypeEntretien.find(query)
-        .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize)
-        .populate('categorieEntretien')
-        .populate('categorieModele')
-        .populate('specialisations');
+    let types;
 
-        const getValue = (obj, path) => {
-            return path.split('.').reduce((o, key) => o?.[key] || '', obj);
-        };
-    
-
-        types = types.sort((a, b) => {
-            if (defaultSortedColumn === 'nom') {
-                const aValue = a[defaultSortedColumn] || '';
-                const bValue = b[defaultSortedColumn] || '';
-                return aValue.localeCompare(bValue) * sortOrder;
-            } 
-            else if (defaultSortedColumn === 'prix') { 
-                const aValue = parseFloat(a[defaultSortedColumn]) || 0;
-                const bValue = parseFloat(b[defaultSortedColumn]) || 0;
-                return (aValue - bValue) * sortOrder;
-            } 
-            else if (defaultSortedColumn === 'specialisation') {
-                const aValue = a.specialisations.map(spe => spe.nom).join(', ').toLowerCase();
-                const bValue = b.specialisations.map(spe => spe.nom).join(', ').toLowerCase();
-                return aValue.localeCompare(bValue) * sortOrder;
-            } 
-            else {
-                const aValue = getValue(a, defaultSortedColumn).toString().toLowerCase();
-                const bValue = getValue(b, defaultSortedColumn).toString().toLowerCase();
-                return aValue.localeCompare(bValue) * sortOrder;
-            }            
-    });
+    if (['categorieEntretien.nom', 'categorieModele.nom', 'specialisations.nom'].includes(defaultSortedColumn)) {
+        types = await TypeEntretien.aggregate([
+            { $match: query },
+            { $lookup: { from: "categoriesEntretien", localField: "categorieEntretien", foreignField: "_id", as: "categorieEntretien" } },
+            { $lookup: { from: "categoriesModele", localField: "categorieModele", foreignField: "_id", as: "categorieModele" } },
+            { $lookup: { from: "specialisations", localField: "specialisations", foreignField: "_id", as: "specialisations" } },
+            { $unwind: { path: "$categorieEntretien", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$categorieModele", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$specialisations", preserveNullAndEmptyArrays: true } },
+            { $addFields: { "specialisationNom": { $ifNull: ["$specialisations.nom", ""] } } },
+            { $sort: { [defaultSortedColumn]: sortOrder } },
+            { $skip: (pageNumber - 1) * pageSize },
+            { $limit: pageSize }
+        ]);
+    } else {
+        types = await TypeEntretien.find(query)
+            .populate('categorieEntretien')
+            .populate('categorieModele')
+            .populate('specialisations')
+            .sort({ [defaultSortedColumn]: sortOrder })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize);
+    }
 
     return { totalItems, items: types };
 };
@@ -308,28 +294,22 @@ exports.searchVehicules = async ({ page = 1, limit = 10, sortedColumn = '', sort
     const totalItems = await Vehicule.aggregate([...aggregationPipeline, { $count: "total" }]);
     const total = totalItems.length > 0 ? totalItems[0].total : 0;
 
+    let sortQuery = {};
+    if (defaultSortedColumn === 'modele') {
+        sortQuery['modele.nom'] = sortOrder;
+    } else if (defaultSortedColumn === 'proprietaire') {
+        sortQuery['proprietaire.nom'] = sortOrder;
+    } else {
+        sortQuery[defaultSortedColumn] = sortOrder;
+    }
+
     aggregationPipeline.push(
+        { $sort: sortQuery }, 
         { $skip: (pageNumber - 1) * pageSize },
         { $limit: pageSize }
     );
 
     let vehicules = await Vehicule.aggregate(aggregationPipeline);
-
-    vehicules = vehicules.sort((a, b) => {
-        if (defaultSortedColumn === 'immatriculation') {
-            const aValue = a[defaultSortedColumn] || '';
-            const bValue = b[defaultSortedColumn] || '';
-            return aValue.localeCompare(bValue) * sortOrder;
-        } else if (defaultSortedColumn === 'modele'){
-            const aValue = a.modele?.nom.toLowerCase();
-            const bValue = b.modele?.nom.toLowerCase();
-            return aValue.localeCompare(bValue) * sortOrder;
-        } else{
-            const aValue = a.proprietaire?.nom.toLowerCase();
-            const bValue = b.proprietaire?.nom.toLowerCase();
-            return aValue.localeCompare(bValue) * sortOrder;
-        }
-    });
 
     return { totalItems: total, items: vehicules };
 };
