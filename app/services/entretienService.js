@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const moment = require('moment');
 const Role = require("../models/Role");
 const Vehicule = require("../models/Vehicule");
+const TypeEntretien = require("../models/TypeEntretien");
 
 exports.createEntretien= async ( date, vehiculeId ) => {
     try {
@@ -366,7 +367,7 @@ exports.getHistoriquesEntretienByVehicule = async ({
     vehiculeId, 
     page = 1, 
     limit = 10, 
-    typesEntretien = [],
+    typeEntretien = '',
     etats = [],
     dateMin = '',
     dateMax = '',
@@ -382,21 +383,25 @@ exports.getHistoriquesEntretienByVehicule = async ({
             return { error: "Véhicule non trouvé" };
         }
 
-        const entretiens = await Entretien.find({ vehicule: vehiculeId });
+        const entretiens = await Entretien.find({ vehicule: vehiculeId }).distinct('_id');
 
-        let query = { entretien: { $in: entretiens.map(e => e._id) } };
+        let query = { entretien: { $in: entretiens } };
 
         if (etats.length > 0) {
-            query['etat.code'] = { $in: etats };
+            query["etat.code"] = { $in: etats };
         }
 
-        if (typesEntretien.length > 0) {
-            query.typeEntretien = { $in: typesEntretien.map(typeId => new mongoose.Types.ObjectId(typeId)) };
+        if (typeEntretien) {
+            const type = await TypeEntretien.findOne({ nom: { $regex: typeEntretien, $options: 'i' } }).select('_id');
+            if (type) {
+                query["typeEntretien"] = type._id;
+            } else {
+                return { totalItems: 0, vehicule, details: [] };
+            }
         }
 
         if (dateMin || dateMax) {
             query.$or = [];
-
             if (dateMin) {
                 query.$or.push({ dateDebut: { $exists: true, $gte: new Date(dateMin) } });
             }
@@ -418,26 +423,22 @@ exports.getHistoriquesEntretienByVehicule = async ({
         let detailsEntretiens = await DetailEntretien.find(query)
             .populate({ path: 'entretien', select: 'date kilometrage' })
             .populate({ path: 'typeEntretien', select: 'nom description prix' })
-            .populate({ path: 'users', select: 'nom' });
-
-        detailsEntretiens.sort((a, b) => {
-            const dateA = a.entretien?.date ? new Date(a.entretien.date) : new Date(0);
-            const dateB = b.entretien?.date ? new Date(b.entretien.date) : new Date(0);
-            return dateB - dateA; 
-        });
-
-        const paginatedDetails = detailsEntretiens.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+            .populate({ path: 'users', select: 'nom' })
+            .sort({ "entretien.date": -1 })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize);
 
         return {
             totalItems,
-            vehicule: vehicule,
-            details: paginatedDetails,
+            vehicule,
+            details: detailsEntretiens,
         };
     } catch (error) {
-        console.error('Error get Historiques:', error);
+        console.error('Erreur lors de la récupération des historiques:', error);
         return { error: 'Erreur lors de la récupération des historiques' };
     }
 };
+
 
 exports.getEntretienByClientByDate = async (entretienId) => {
     try {
