@@ -250,7 +250,7 @@ exports.getRdvByClient = async (clientId) => {
         const vehicules = await Vehicule.find({ proprietaire: clientId });
         const entretiens = await Entretien.find({vehicule: { $in: vehicules}})
         .populate('vehicule')
-        .sort({date: -1});
+        .sort({date: 1});
         const detailsEntretiens= await DetailEntretien.find({entretien: {$in: entretiens}, 'etat.code': { $ne: 20 }})
         .populate({path: 'entretien', populate: 'vehicule'})
         .populate('typeEntretien')
