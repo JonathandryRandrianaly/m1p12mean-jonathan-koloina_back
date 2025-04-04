@@ -37,7 +37,7 @@ const detailEntretienSchema = new mongoose.Schema({
     ],
     etat: {
         type: {
-            code: { type: Number, required: true }, // -20:annulé -10:a faire, 0 en cours, 10: attente de validation, 20: valider
+            code: { type: Number, required: true },// -10:a faire, 0 en cours, 10: attente de validation, 20: valider
             libelle: { type: String, required: true }
         },
         required: true
