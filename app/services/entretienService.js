@@ -385,7 +385,7 @@ exports.getHistoriquesEntretienByVehicule = async ({
 
         const entretiens = await Entretien.find({ vehicule: vehiculeId }).distinct('_id');
 
-        let query = { entretien: { $in: entretiens } };
+        let query = { entretien: { $in: entretiens }};
 
         if (etats.length > 0) {
             query["etat.code"] = { $in: etats };
@@ -429,9 +429,14 @@ exports.getHistoriquesEntretienByVehicule = async ({
             .populate({ path: 'entretien', select: 'date kilometrage' })
             .populate({ path: 'typeEntretien', select: 'nom description prix' })
             .populate({ path: 'users', select: 'nom' })
-            .sort({ "entretien.date": -1 })
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize);
+
+        detailsEntretiens.sort((a, b) => {
+                const indexA = entretiens.findIndex(entretien => entretien._id.toString() === a.entretien._id.toString());
+                const indexB = entretiens.findIndex(entretien => entretien._id.toString() === b.entretien._id.toString());
+                return indexB - indexA; 
+        });
 
         return {
             totalItems,
