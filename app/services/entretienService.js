@@ -377,7 +377,7 @@ exports.getHistoriquesEntretienByVehicule = async ({
 
     try {
         const vehicule = await Vehicule.findById(vehiculeId)
-            .populate({ path: 'modele', select: 'nom' });
+            .populate({ path: 'modele', select: 'nom categorie' });
 
         if (!vehicule) {
             return { error: "Véhicule non trouvé" };
@@ -392,7 +392,12 @@ exports.getHistoriquesEntretienByVehicule = async ({
         }
 
         if (typeEntretien) {
-            const type = await TypeEntretien.findOne({ nom: { $regex: typeEntretien, $options: 'i' } }).select('_id');
+            const type = await TypeEntretien.findOne(
+                {
+                    nom: { $regex: typeEntretien, $options: 'i' },
+                    categorieModele: vehicule.modele.categorie
+                }
+            ).select('_id');
             if (type) {
                 query["typeEntretien"] = type._id;
             } else {
