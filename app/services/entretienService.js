@@ -250,7 +250,7 @@ exports.getRdvByClient = async (clientId) => {
         const vehicules = await Vehicule.find({ proprietaire: clientId });
         const entretiens = await Entretien.find({vehicule: { $in: vehicules}})
         .populate('vehicule')
-        .sort({date: -1});
+        .sort({date: 1});
         const detailsEntretiens= await DetailEntretien.find({entretien: {$in: entretiens}, 'etat.code': { $ne: 20 }})
         .populate({path: 'entretien', populate: 'vehicule'})
         .populate('typeEntretien')
@@ -377,7 +377,7 @@ exports.getHistoriquesEntretienByVehicule = async ({
 
     try {
         const vehicule = await Vehicule.findById(vehiculeId)
-            .populate({ path: 'modele', select: 'nom' });
+            .populate({ path: 'modele', select: 'nom categorie' });
 
         if (!vehicule) {
             return { error: "Véhicule non trouvé" };
@@ -392,7 +392,12 @@ exports.getHistoriquesEntretienByVehicule = async ({
         }
 
         if (typeEntretien) {
-            const type = await TypeEntretien.findOne({ nom: { $regex: typeEntretien, $options: 'i' } }).select('_id');
+            const type = await TypeEntretien.findOne(
+                {
+                    nom: { $regex: typeEntretien, $options: 'i' },
+                    categorieModele: vehicule.modele.categorie
+                }
+            ).select('_id');
             if (type) {
                 query["typeEntretien"] = type._id;
             } else {
