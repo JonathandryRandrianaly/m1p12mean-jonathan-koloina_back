@@ -102,7 +102,11 @@ exports.searchFactures = async ({
     let query = {};
 
     if (id) {
-        query._id = { $regex: id, $options: 'i' };
+        if (mongoose.isValidObjectId(id)) {
+            query._id = new mongoose.Types.ObjectId(id);
+        }else{
+            return { totalItems: 0, items: [] };
+        }
     }
 
     if (client) {
